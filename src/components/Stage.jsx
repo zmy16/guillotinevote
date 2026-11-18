@@ -30,7 +30,7 @@ function prefersReducedMotion() {
   return typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
 
-function buildExecutionTimeline(root, blade, { onBladeLand, onCommit }) {
+function buildExecutionTimeline(root, blade, { onBladeSound, onCommit }) {
   const frame = root.querySelector('.blade-frame');
   const guard = root.querySelector('.guillotine-rig');
   const flash = root.querySelector('.rig-flash');
@@ -48,6 +48,7 @@ function buildExecutionTimeline(root, blade, { onBladeLand, onCommit }) {
   const drops = root.querySelectorAll('.rig-drop');
   const jaws = root.querySelectorAll('.rig-jaw');
   const stain = root.querySelector('.rig-stain');
+  const impactGlow = root.querySelector('.rig-impact-glow');
 
   const timeline = gsap.timeline({ defaults: { overwrite: 'auto' } });
   timeline.to(jaws, { x: 0, duration: 0.12, ease: 'power2.in' }, 0);
@@ -57,13 +58,14 @@ function buildExecutionTimeline(root, blade, { onBladeLand, onCommit }) {
   timeline.to(shadow, { opacity: 0.3, attr: { rx: 20 }, duration: 0.44, ease: 'power2.out' }, 0);
   timeline.to(blade, { y: -9, duration: 0.46, ease: 'sine.inOut' }, 0.44);
   timeline.addLabel('release', 0.9);
+  timeline.call(onBladeSound, ['fall'], 'release');
   timeline.to(blade, { y: BLADE_LANDED_Y, duration: 0.3, ease: 'power3.in' }, 'release');
   timeline.to(blade, { filter: 'blur(2.6px)', duration: 0.22, ease: 'power2.in' }, 'release+=0.06');
   timeline.to(speed, { opacity: 1, duration: 0.09 }, 'release+=0.1');
   timeline.to(glow, { opacity: 0.85, duration: 0.1 }, 'release+=0.1');
   timeline.to(shadow, { opacity: 0.85, attr: { rx: 32 }, duration: 0.3, ease: 'power2.in' }, 'release');
   timeline.addLabel('impact', 1.22);
-  timeline.call(onBladeLand, null, 'impact');
+  timeline.call(onBladeSound, ['blade'], 'impact');
   timeline.to(blade, { y: BLADE_BOUNCE_Y, duration: 0.08, ease: 'power2.out' }, 'impact');
   timeline.to(blade, { y: BLADE_LANDED_Y, duration: 0.15, ease: 'sine.out' }, 'impact+=0.08');
   timeline.fromTo(
@@ -147,7 +149,7 @@ function buildExecutionTimeline(root, blade, { onBladeLand, onCommit }) {
     },
     'impact'
   );
-  timeline.to(frame, { boxShadow: '0 0 110px rgba(220,38,38,0.55)', duration: 0.1, yoyo: true, repeat: 1, clearProps: 'boxShadow' }, 'impact');
+  timeline.fromTo(impactGlow, { opacity: 0 }, { opacity: 1, duration: 0.1, yoyo: true, repeat: 1 }, 'impact');
   timeline.call(onCommit, null, `impact+=${COMMIT_DELAY_AFTER_IMPACT}`);
   timeline.to(blade, { y: 0, duration: 0.86, ease: 'power2.inOut', delay: 0.22 }, 'impact+=0.62');
   timeline.to(
@@ -166,7 +168,7 @@ export function Stage({
   onSelectOption,
   onSelectVerdict,
   onChangeOtherVerdict,
-  onBladeLand,
+  onBladeSound,
   onExecute,
   onPardon,
   muted,
@@ -250,14 +252,15 @@ export function Stage({
       return;
     }
     if (prefersReducedMotion()) {
-      onBladeLand();
+      onBladeSound('blade');
       onExecute();
       return;
     }
     executionTimeline.current?.kill();
+    onBladeSound('arm');
     setIsExecuting(true);
     executionTimeline.current = buildExecutionTimeline(rootRef.current, bladeRef.current, {
-      onBladeLand,
+      onBladeSound,
       onCommit: () => {
         setIsExecuting(false);
         onExecute();
@@ -270,9 +273,10 @@ export function Stage({
       <p className="visually-hidden" role="status" aria-live="polite">
         {announcement}
       </p>
-      <div className="stage">
+      <div className="stage" data-executing={isExecuting}>
         <div className="stage-rig">
           <div className="blade-frame">
+            <div className="rig-impact-glow" aria-hidden="true" />
             <div className="rig-wrap">
               <GuillotineRig bladeRef={bladeRef} />
               <p className="rig-caption">

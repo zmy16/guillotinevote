@@ -75,6 +75,7 @@ export default function App() {
       announce(result.errors.join(' '));
       return;
     }
+    playSound('arm');
     setGameState(result.state);
     setIsSample(sample);
     resumedEntryAt.current = null;
@@ -105,6 +106,7 @@ export default function App() {
     startGameFromSetup(SAMPLE_SETUP, true);
   }, []);
   const handleResumeSession = useCallback((entryAt, restoredState) => {
+    playSound('arm');
     setGameState(restoredState);
     setIsSample(false);
     resumedEntryAt.current = entryAt;
@@ -168,8 +170,6 @@ export default function App() {
   const handleChangeOtherVerdict = useCallback((text) => {
     setSelections((current) => ({ ...current, otherText: text }));
   }, []);
-
-  const handleBladeLand = useCallback(() => playSound('blade'), []);
 
   const handleExecute = useCallback(() => {
     if (!gameState) {
@@ -365,7 +365,7 @@ export default function App() {
               onSelectOption={handleSelectOption}
               onSelectVerdict={handleSelectVerdict}
               onChangeOtherVerdict={handleChangeOtherVerdict}
-              onBladeLand={handleBladeLand}
+              onBladeSound={playSound}
               onExecute={handleExecute}
               onPardon={handlePardon}
               muted={muted}

@@ -20,6 +20,16 @@ function readShareParam() {
   return params.get('r');
 }
 
+const VIEW_HASHES = { setup: '#/setup', history: '#/history', faq: '#/faq' };
+
+function readInitialView(shareParam) {
+  if (shareParam) {
+    return 'shared';
+  }
+  const matchingView = Object.keys(VIEW_HASHES).find((name) => VIEW_HASHES[name] === window.location.hash);
+  return matchingView || 'landing';
+}
+
 export default function App() {
   const [shareParam] = useState(() => readShareParam());
   const [shareResult, setShareResult] = useState(() => {
@@ -29,7 +39,7 @@ export default function App() {
     return decodeShareState(shareParam);
   });
 
-  const [view, setView] = useState(() => (shareParam ? 'shared' : 'landing'));
+  const [view, setView] = useState(() => readInitialView(shareParam));
   const [setupDraft, setSetupDraft] = useState(null);
   const [isSample, setIsSample] = useState(false);
   const [gameState, setGameState] = useState(null);
@@ -40,6 +50,16 @@ export default function App() {
   const [leaveDialog, setLeaveDialog] = useState(null);
   const announcementTimer = useRef(null);
   const resumedEntryAt = useRef(null);
+
+  useEffect(() => {
+    if (view === 'shared') {
+      return;
+    }
+    const hash = VIEW_HASHES[view] || '';
+    if (window.location.hash !== hash) {
+      window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}${hash}`);
+    }
+  }, [view]);
 
   useEffect(() => {
     return () => {

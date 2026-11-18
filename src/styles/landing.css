@@ -65,7 +65,7 @@
 .hero-lede {
   margin-top: var(--space-4);
   color: var(--text-muted);
-  max-width: 54ch;
+  max-width: 100ch;
   font-size: 17px;
   line-height: 1.6;
 }

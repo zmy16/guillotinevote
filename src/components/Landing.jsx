@@ -12,7 +12,7 @@ const PRESET_ICONS = {
 
 
 export function Landing({ onChoosePreset, onStartCustom, onStartSample, onOpenHistory, onOpenFaq }) {
-  const historyCount = readHistory().length;
+  const hasHistory = readHistory().length > 0;
   return (
     <>
       <div className="page page-wide">
@@ -22,11 +22,10 @@ export function Landing({ onChoosePreset, onStartCustom, onStartSample, onOpenHi
             GuillotineVote
           </div>
           <nav className="nav-links" aria-label="Court pages">
-            {historyCount > 0 && (
+            {hasHistory && (
               <button type="button" className="nav-link" onClick={onOpenHistory}>
                 <TombstoneArt className="nav-link-icon" aria-hidden="true" />
                 Match history
-                <span className="nav-link-count">{historyCount}</span>
               </button>
             )}
             <button type="button" className="nav-link" onClick={onOpenFaq}>

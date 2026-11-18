@@ -1,7 +1,6 @@
 import { GuillotineMark } from './HalloweenBackdrop.jsx';
 import { PRESETS } from '../presets.js';
 import { PumpkinArt, CoffinArt, SwordArt, ExecutionerHood, TombstoneArt, GhostArt, BatArt, Sparkle } from './Icons.jsx';
-import { readHistory } from '../history.js';
 
 const PRESET_ICONS = {
   dinner: CoffinArt,
@@ -12,7 +11,6 @@ const PRESET_ICONS = {
 
 
 export function Landing({ onChoosePreset, onStartCustom, onStartSample, onOpenHistory, onOpenFaq }) {
-  const hasHistory = readHistory().length > 0;
   return (
     <>
       <div className="page page-wide">
@@ -22,12 +20,10 @@ export function Landing({ onChoosePreset, onStartCustom, onStartSample, onOpenHi
             GuillotineVote
           </div>
           <nav className="nav-links" aria-label="Court pages">
-            {hasHistory && (
-              <button type="button" className="nav-link" onClick={onOpenHistory}>
-                <TombstoneArt className="nav-link-icon" aria-hidden="true" />
-                Match history
-              </button>
-            )}
+            <button type="button" className="nav-link" onClick={onOpenHistory}>
+              <TombstoneArt className="nav-link-icon" aria-hidden="true" />
+              Match history
+            </button>
             <button type="button" className="nav-link" onClick={onOpenFaq}>
               <BatArt className="nav-link-icon" aria-hidden="true" />
               FAQ

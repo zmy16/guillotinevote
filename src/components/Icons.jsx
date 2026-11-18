@@ -1,9 +1,11 @@
-import { forwardRef } from 'react';
-import { Icon } from '@iconify/react';
+import { Icon, addIcon } from '@iconify/react';
+import { ICON_DATA } from '../iconData.js';
 
-export const GuillotineArt = forwardRef(function GuillotineArt(props, ref) {
-  return <Icon icon="game-icons:guillotine" {...props} ref={ref} />;
-});
+Object.entries(ICON_DATA).forEach(([name, data]) => addIcon(name, data));
+
+export function GuillotineArt(props) {
+  return <Icon icon="game-icons:guillotine" {...props} />;
+}
 
 export function ExecutionerHood(props) {
   return <Icon icon="game-icons:executioner-hood" {...props} />;

@@ -157,7 +157,7 @@ export function InvalidShare({ reason }) {
       <p className="section-sub">
         {reason || 'The share link could not be read. It may be malformed or from an unsupported version.'}
       </p>
-      <a className="button button-ghost" href="/">
+      <a className="button button-ghost" href={import.meta.env.BASE_URL}>
         Return to the court
       </a>
     </div>

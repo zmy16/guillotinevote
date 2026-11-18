@@ -25,6 +25,7 @@ const VERDICT_ICONS = {
 const BLADE_LANDED_Y = 71;
 const BLADE_BOUNCE_Y = BLADE_LANDED_Y - 6;
 const COMMIT_DELAY_AFTER_IMPACT = 0.5;
+const SINGLE_COLUMN_QUERY = '(max-width: 959px)';
 
 function prefersReducedMotion() {
   return typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -193,6 +194,12 @@ export function Stage({
     );
   }, [state.currentPlayerIndex]);
 
+  useEffect(() => {
+    if (window.matchMedia(SINGLE_COLUMN_QUERY).matches) {
+      window.scrollTo({ top: 0, behavior: prefersReducedMotion() ? 'auto' : 'smooth' });
+    }
+  }, [state.currentPlayerIndex]);
+
   useEffect(() => () => executionTimeline.current?.kill(), []);
 
   useEffect(() => {
@@ -279,6 +286,9 @@ export function Stage({
             <div className="rig-impact-glow" aria-hidden="true" />
             <div className="rig-wrap">
               <GuillotineRig bladeRef={bladeRef} />
+              <p className="rig-turn-label" aria-hidden="true">
+                {currentPlayer}&rsquo;s turn
+              </p>
               <p className="rig-caption">
                 <ExecutionerHood className="rig-caption-icon" aria-hidden="true" />
                 The Chopping Block

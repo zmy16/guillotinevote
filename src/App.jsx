@@ -286,9 +286,9 @@ export default function App() {
         GuillotineVote
       </div>
       {isTrialInProgress && (
-        <button type="button" className="button button-ghost exit-button" onClick={handleLeaveRequest}>
+        <button type="button" className="button button-ghost exit-button" aria-label="Leave the court" onClick={handleLeaveRequest}>
           <ArrowLeft size={16} aria-hidden="true" />
-          Leave the court
+          Leave<span className="exit-button-extra"> the court</span>
         </button>
       )}
     </div>

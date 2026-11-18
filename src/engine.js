@@ -26,6 +26,115 @@ export function createGame(setup) {
   };
 }
 
+export function restoreGame(snapshot) {
+  if (!isRestorableSnapshot(snapshot)) {
+    return { ok: false, error: RESTORE_ERROR };
+  }
+  return {
+    ok: true,
+    state: {
+      title: snapshot.title,
+      players: [...snapshot.players],
+      options: snapshot.options.map(({ id, label, status }) => ({ id, label, status })),
+      currentPlayerIndex: snapshot.currentPlayerIndex,
+      round: snapshot.round,
+      pardonAvailable: snapshot.pardonAvailable,
+      graveyard: snapshot.graveyard.map(restoreRecord),
+      selection: null,
+      verdict: null,
+      winner: null,
+      finished: false
+    }
+  };
+}
+
+function restoreRecord(record) {
+  const { kind, optionId, optionLabel, player, round } = record;
+  const restored = { kind, optionId, optionLabel, player, round };
+  return kind === 'execution' ? { ...restored, verdict: normalizeVerdict(record.verdict) } : restored;
+}
+
+function isNonBlankString(value) {
+  return typeof value === 'string' && value.trim().length > 0;
+}
+
+function isRestorableOption(option) {
+  return (
+    Boolean(option) &&
+    isNonBlankString(option.id) &&
+    isNonBlankString(option.label) &&
+    (option.status === 'alive' || option.status === 'executed')
+  );
+}
+
+function isRestorableRecord(record, index, players, options) {
+  if (!record || typeof record !== 'object') {
+    return false;
+  }
+  const option = options.find((candidate) => candidate.id === record.optionId);
+  const isExecution = record.kind === 'execution';
+  return (
+    Boolean(option) &&
+    (isExecution || record.kind === 'pardon') &&
+    record.optionLabel === option.label &&
+    record.player === players[index % players.length] &&
+    record.round === Math.floor(index / players.length) + 1 &&
+    (!isExecution || normalizeVerdict(record.verdict) !== null)
+  );
+}
+
+function areExecutionsConsistent(options, graveyard) {
+  const executedIds = options.filter((option) => option.status === 'executed').map((option) => option.id);
+  const executionIds = graveyard.filter((record) => record.kind === 'execution').map((record) => record.optionId);
+  return (
+    executedIds.length === executionIds.length &&
+    new Set(executionIds).size === executionIds.length &&
+    executionIds.every((id) => executedIds.includes(id))
+  );
+}
+
+function isRestorableSnapshot(snapshot) {
+  if (!snapshot || typeof snapshot !== 'object' || typeof snapshot.title !== 'string') {
+    return false;
+  }
+  const { players, options, graveyard } = snapshot;
+  if (!Array.isArray(players) || players.length < MIN_PLAYERS || players.length > MAX_PLAYERS) {
+    return false;
+  }
+  if (!players.every(isNonBlankString)) {
+    return false;
+  }
+  if (!Array.isArray(options) || options.length < MIN_OPTIONS || options.length > MAX_OPTIONS) {
+    return false;
+  }
+  if (!options.every(isRestorableOption)) {
+    return false;
+  }
+  if (new Set(options.map((option) => option.id)).size !== options.length) {
+    return false;
+  }
+  if (new Set(options.map((option) => option.label.toLowerCase())).size !== options.length) {
+    return false;
+  }
+  if (options.filter((option) => option.status === 'alive').length < 2) {
+    return false;
+  }
+  if (!Array.isArray(graveyard)) {
+    return false;
+  }
+  if (!graveyard.every((record, index) => isRestorableRecord(record, index, players, options))) {
+    return false;
+  }
+  const pardonCount = graveyard.filter((record) => record.kind === 'pardon').length;
+  return (
+    snapshot.currentPlayerIndex === graveyard.length % players.length &&
+    snapshot.round === Math.floor(graveyard.length / players.length) + 1 &&
+    snapshot.pardonAvailable === (pardonCount === 0) &&
+    pardonCount <= 1 &&
+    areExecutionsConsistent(options, graveyard)
+  );
+}
+
 function validateSetup(setup) {
   const errors = [];
   const players = (setup.players || []).map((name) => (typeof name === 'string' ? name.trim() : ''));
@@ -297,3 +406,4 @@ export const MAX_OPTIONS = 12;
 export const MAX_VERDICT_LENGTH = 40;
 export const MAX_SHARE_LENGTH = 4000;
 export const SHARE_VERSION = 1;
+const RESTORE_ERROR = 'This trial can no longer be resumed.';

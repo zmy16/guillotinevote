@@ -39,6 +39,7 @@ export default function App() {
   const [copied, setCopied] = useState(false);
   const [leaveDialog, setLeaveDialog] = useState(null);
   const announcementTimer = useRef(null);
+  const resumedEntryAt = useRef(null);
 
   useEffect(() => {
     return () => {
@@ -76,6 +77,7 @@ export default function App() {
     }
     setGameState(result.state);
     setIsSample(sample);
+    resumedEntryAt.current = null;
     resetSelection();
     setCopied(false);
     exit(() => {
@@ -102,6 +104,15 @@ export default function App() {
   const handleStartSample = useCallback(() => {
     startGameFromSetup(SAMPLE_SETUP, true);
   }, []);
+  const handleResumeSession = useCallback((entryAt, restoredState) => {
+    setGameState(restoredState);
+    setIsSample(false);
+    resumedEntryAt.current = entryAt;
+    resetSelection();
+    setCopied(false);
+    exit(() => setView('stage'));
+    announce(`Trial resumed. ${restoredState.players[restoredState.currentPlayerIndex]} continues.`);
+  }, []);
   const handleOpenHistory = useCallback(() => {
     exit(() => setView('history'));
   }, []);
@@ -114,12 +125,14 @@ export default function App() {
       setView('landing');
       setGameState(null);
       setIsSample(false);
+      resumedEntryAt.current = null;
+      setLeaveDialog(null);
       resetSelection();
     });
   }, []);
   const handleAbandonSession = useCallback(() => {
     if (gameState && !gameState.finished && !isSample) {
-      recordSession(gameState);
+      recordSession(gameState, resumedEntryAt.current);
     }
     handleBackToLanding();
   }, [gameState, isSample, handleBackToLanding]);
@@ -185,7 +198,7 @@ export default function App() {
     setGameState(executed.state);
     resetSelection();
     if (executed.state.finished) {
-      recordSession(executed.state);
+      recordSession(executed.state, resumedEntryAt.current);
       playSound('winner');
       announce(`${executedRecord.optionLabel} has fallen. ${executed.state.winner} is the sole survivor.`);
     } else {
@@ -279,7 +292,7 @@ export default function App() {
       <div className="app-shell">
         {backdrop}
         <div ref={pageRef}>
-          <HistoryPage onBack={handleBackToLanding} />
+          <HistoryPage onBack={handleBackToLanding} onResume={handleResumeSession} />
         </div>
       </div>
     );

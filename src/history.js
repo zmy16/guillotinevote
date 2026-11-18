@@ -11,7 +11,12 @@ export function readHistory() {
   }
 }
 
-export function recordSession(state) {
+function snapshotOf(state) {
+  const { title, players, options, currentPlayerIndex, round, pardonAvailable, graveyard } = state;
+  return { title, players, options, currentPlayerIndex, round, pardonAvailable, graveyard };
+}
+
+export function recordSession(state, replacedEntryAt) {
   if (!state) {
     return;
   }
@@ -24,10 +29,13 @@ export function recordSession(state) {
     rounds: state.round,
     executions: state.graveyard.filter((record) => record.kind === 'execution').length,
     survivors: state.options.filter((option) => option.status === 'alive').length,
+    snapshot: finished ? undefined : snapshotOf(state),
     at: Date.now()
   };
   const rest = readHistory().filter(
-    (item) => !(item.title === entry.title && item.winner === entry.winner && entry.at - item.at < 60000)
+    (item) =>
+      item.at !== replacedEntryAt &&
+      !(item.title === entry.title && item.winner === entry.winner && entry.at - item.at < 60000)
   );
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify([entry, ...rest].slice(0, MAX_ENTRIES)));

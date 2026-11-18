@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { createGame, selectOption, selectVerdict, executeSelected, useRoyalPardon, encodeShareState, decodeShareState } from '../src/engine.js';
+import { createGame, selectOption, selectVerdict, executeSelected, useRoyalPardon, encodeShareState, decodeShareState, restoreGame } from '../src/engine.js';
 
 const verdictCycle = ['too_expensive', 'too_far', 'boring', 'not_today'];
 
@@ -57,5 +57,65 @@ describe('integration', () => {
     expect(state.finished).toBe(true);
     expect(state.graveyard.filter((record) => record.kind === 'pardon').length).toBe(1);
     expect(state.graveyard.filter((record) => record.kind === 'execution').length).toBe(2);
+  });
+});
+
+describe('restoreGame', () => {
+  function unfinishedState() {
+    let state = createGame({
+      title: 'Resume Test',
+      players: ['A', 'B', 'C'],
+      options: ['One', 'Two', 'Three', 'Four', 'Five']
+    }).state;
+    state = selectOption(state, 'opt-0').state;
+    state = selectVerdict(state, { kind: 'boring' }).state;
+    state = executeSelected(state).state;
+    state = selectOption(state, 'opt-1').state;
+    state = useRoyalPardon(state).state;
+    return state;
+  }
+
+  function snapshotOf(state) {
+    return JSON.parse(JSON.stringify(state));
+  }
+
+  it('restores an unfinished game and lets it be played to the end', () => {
+    const original = unfinishedState();
+    const restored = restoreGame(snapshotOf(original));
+    expect(restored.ok).toBe(true);
+    expect(restored.state.selection).toBeNull();
+    expect(restored.state.graveyard).toEqual(original.graveyard);
+    expect(restored.state.currentPlayerIndex).toBe(original.currentPlayerIndex);
+    expect(restored.state.pardonAvailable).toBe(false);
+
+    let state = restored.state;
+    while (!state.finished) {
+      const alive = state.options.find((option) => option.status === 'alive');
+      state = selectOption(state, alive.id).state;
+      state = selectVerdict(state, { kind: 'too_far' }).state;
+      state = executeSelected(state).state;
+    }
+    expect(state.options.filter((option) => option.status === 'alive').length).toBe(1);
+  });
+
+  it('rejects a snapshot whose turn does not match its graveyard', () => {
+    const tampered = { ...snapshotOf(unfinishedState()), currentPlayerIndex: 0 };
+    expect(restoreGame(tampered).ok).toBe(false);
+  });
+
+  it('rejects a snapshot with an unknown option, a lost pardon flag, or a finished board', () => {
+    const base = snapshotOf(unfinishedState());
+    const unknownOption = { ...base, graveyard: base.graveyard.map((record) => ({ ...record, optionId: 'opt-99' })) };
+    const pardonRestored = { ...base, pardonAvailable: true };
+    const finishedBoard = { ...base, options: base.options.map((option, index) => ({ ...option, status: index === 4 ? 'alive' : 'executed' })) };
+    expect(restoreGame(unknownOption).ok).toBe(false);
+    expect(restoreGame(pardonRestored).ok).toBe(false);
+    expect(restoreGame(finishedBoard).ok).toBe(false);
+  });
+
+  it('rejects missing or non-object snapshots', () => {
+    expect(restoreGame(undefined).ok).toBe(false);
+    expect(restoreGame('nope').ok).toBe(false);
+    expect(restoreGame({}).ok).toBe(false);
   });
 });

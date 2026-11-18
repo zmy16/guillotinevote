@@ -392,6 +392,11 @@
   font-size: 13px;
   color: var(--text-muted);
 }
+
+.history-resume {
+  margin-left: auto;
+  min-height: 44px;
+}
 .history-empty {
   margin: 0;
   padding: var(--space-5) var(--space-4);

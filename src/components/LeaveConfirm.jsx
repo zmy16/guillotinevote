@@ -25,7 +25,7 @@ export function LeaveConfirm({ onConfirm, onCancel }) {
         Abandon the trial?
       </h2>
       <p className="confirm-dialog-body">
-        Leaving now closes the docket. The rounds you already played are kept in Match history as an unfinished trial; the court itself cannot be resumed.
+        Leaving now closes the docket. The rounds you already played are kept in Match history as an unfinished trial, and you can resume it from there.
       </p>
       <div className="confirm-dialog-actions">
         <button type="button" className="button button-ghost" onClick={onCancel}>

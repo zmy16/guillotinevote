@@ -1,6 +1,7 @@
 import { ArrowLeft } from 'lucide-react';
 import { BrandChip } from './HalloweenBackdrop.jsx';
 import { readHistory } from '../history.js';
+import { restoreGame } from '../engine.js';
 
 const FAQ_ITEMS = [
   {
@@ -29,7 +30,7 @@ const FAQ_ITEMS = [
   },
   {
     q: 'Do we need accounts or a server?',
-    a: 'No. Everything runs in the browser and nothing is uploaded. Close the tab and the trial is gone, which is why the winner screen gives you a share link that packs the whole result into the URL.'
+    a: 'No. Everything runs in the browser and nothing is uploaded. Close the tab mid-game and the trial is gone. Leave through the Leave the court button and it waits in Match history, where you can resume it. The winner screen gives you a share link that packs the whole result into the URL.'
   },
   {
     q: 'Does it work on a phone?',
@@ -46,7 +47,26 @@ function BackButton({ onBack }) {
   );
 }
 
-export function HistoryPage({ onBack }) {
+function HistoryItem({ item, onResume }) {
+  const isUnfinished = item.status === 'unfinished';
+  const restored = isUnfinished ? restoreGame(item.snapshot) : null;
+  return (
+    <li className="history-item" data-status={isUnfinished ? 'unfinished' : 'finished'}>
+      <span className="history-winner">{item.winner || 'Unfinished trial'}</span>
+      <span className="history-detail">
+        {item.title} · {item.players} players · {item.executions} executions
+        {isUnfinished ? ` · ${item.survivors} still standing` : ''} · {new Date(item.at).toLocaleDateString()}
+      </span>
+      {restored && restored.ok && (
+        <button type="button" className="button button-ghost history-resume" onClick={() => onResume(item.at, restored.state)}>
+          Resume trial
+        </button>
+      )}
+    </li>
+  );
+}
+
+export function HistoryPage({ onBack, onResume }) {
   const history = readHistory();
   return (
     <div className="page">
@@ -67,18 +87,7 @@ export function HistoryPage({ onBack }) {
         {history.length > 0 ? (
           <ol className="history-list">
             {history.map((item) => (
-              <li
-                className="history-item"
-                data-status={item.status === 'unfinished' ? 'unfinished' : 'finished'}
-                key={`${item.at}-${item.title}`}
-              >
-                <span className="history-winner">{item.winner || 'Unfinished trial'}</span>
-                <span className="history-detail">
-                  {item.title} · {item.players} players · {item.executions} executions
-                  {item.status === 'unfinished' ? ` · ${item.survivors} still standing` : ''} ·{' '}
-                  {new Date(item.at).toLocaleDateString()}
-                </span>
-              </li>
+              <HistoryItem key={`${item.at}-${item.title}`} item={item} onResume={onResume} />
             ))}
           </ol>
         ) : (

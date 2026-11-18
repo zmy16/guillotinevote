@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
-import { createGame, selectOption, selectVerdict, executeSelected, grantRoyalPardon, encodeShareState, decodeShareState } from './engine.js';import { SAMPLE_SETUP } from './presets.js';
+import { createGame, selectOption, selectVerdict, executeSelected, grantRoyalPardon, encodeShareState, decodeShareState } from './engine.js';
+import { SAMPLE_SETUP } from './presets.js';
 import { recordSession } from './history.js';
 import { playSound, isMuted, setMuted } from './sound.js';
 import { Landing } from './components/Landing.jsx';
@@ -13,21 +14,20 @@ import { BrandChip } from './components/Brand.jsx';
 import { ConfirmDialog } from './components/ConfirmDialog.jsx';
 import { usePageEnter, usePageExit } from './usePageEnter.js';
 
-function readShareParam() {
-  if (typeof window === 'undefined') {
-    return null;
-  }
-  const params = new URLSearchParams(window.location.search);
-  return params.get('r');
-}
+const EMPTY_SELECTION = { optionId: null, verdict: null, otherText: '' };
 
 const LEAVE_BODY_SAVED = 'Leaving now closes the docket. The rounds you already played are kept in Match history as an unfinished trial, and you can resume it from there.';
 const LEAVE_BODY_NOTHING_SAVED = 'Leaving now closes the docket. Nothing is saved to Match history.';
 
 const VIEW_HASHES = { setup: '#/setup', history: '#/history', faq: '#/faq' };
 
-function readInitialView(shareParam) {
-  if (shareParam) {
+function readShareResult() {
+  const param = new URLSearchParams(window.location.search).get('r');
+  return param ? decodeShareState(param) : null;
+}
+
+function readInitialView(shareResult) {
+  if (shareResult) {
     return 'shared';
   }
   const matchingView = Object.keys(VIEW_HASHES).find((name) => VIEW_HASHES[name] === window.location.hash);
@@ -35,25 +35,23 @@ function readInitialView(shareParam) {
 }
 
 export default function App() {
-  const [shareParam] = useState(() => readShareParam());
-  const [shareResult, setShareResult] = useState(() => {
-    if (!shareParam) {
-      return null;
-    }
-    return decodeShareState(shareParam);
-  });
-
-  const [view, setView] = useState(() => readInitialView(shareParam));
+  const [shareResult] = useState(readShareResult);
+  const [view, setView] = useState(() => readInitialView(shareResult));
   const [setupDraft, setSetupDraft] = useState(null);
   const [isSample, setIsSample] = useState(false);
   const [gameState, setGameState] = useState(null);
-  const [selections, setSelections] = useState({ optionId: null, verdict: null, otherText: '' });
+  const [selections, setSelections] = useState(EMPTY_SELECTION);
   const [announcement, setAnnouncement] = useState('');
   const [muted, setMutedState] = useState(() => isMuted());
   const [copied, setCopied] = useState(false);
   const [leaveDialog, setLeaveDialog] = useState(null);
   const announcementTimer = useRef(null);
   const resumedEntryAt = useRef(null);
+
+  const pageKey = view === 'stage' && gameState && gameState.finished ? 'finished' : view;
+  const pageRef = usePageEnter(pageKey);
+  const runExit = usePageExit();
+  const exit = useCallback((navigate) => runExit(pageRef.current, navigate), [runExit, pageRef]);
 
   useEffect(() => {
     if (view === 'shared') {
@@ -89,11 +87,7 @@ export default function App() {
     });
   }, []);
 
-  function resetSelection() {
-    setSelections({ optionId: null, verdict: null, otherText: '' });
-  }
-
-  function startGameFromSetup(setup, sample) {
+  const startGameFromSetup = useCallback((setup, sample) => {
     const result = createGame(setup);
     if (!result.ok) {
       announce(result.errors.join(' '));
@@ -103,13 +97,13 @@ export default function App() {
     setGameState(result.state);
     setIsSample(sample);
     resumedEntryAt.current = null;
-    resetSelection();
+    setSelections(EMPTY_SELECTION);
     setCopied(false);
     exit(() => {
       setView('stage');
     });
     announce(sample ? 'Sample round started.' : `The court is open. ${result.state.players[0]} begins.`);
-  }
+  }, [announce, exit]);
 
   const handleChoosePreset = useCallback(
     (preset) => {
@@ -117,34 +111,36 @@ export default function App() {
       setIsSample(false);
       exit(() => setView('setup'));
     },
-    []
+    [exit]
   );
 
   const handleStartCustom = useCallback(() => {
     setSetupDraft({ title: '', options: [] });
     setIsSample(false);
-    setView('setup');
-  }, []);
+    exit(() => setView('setup'));
+  }, [exit]);
 
   const handleStartSample = useCallback(() => {
     startGameFromSetup(SAMPLE_SETUP, true);
-  }, []);
+  }, [startGameFromSetup]);
+
   const handleResumeSession = useCallback((entryAt, restoredState) => {
     playSound('arm');
     setGameState(restoredState);
     setIsSample(false);
     resumedEntryAt.current = entryAt;
-    resetSelection();
+    setSelections(EMPTY_SELECTION);
     setCopied(false);
     exit(() => setView('stage'));
     announce(`Trial resumed. ${restoredState.players[restoredState.currentPlayerIndex]} continues.`);
-  }, []);
+  }, [announce, exit]);
+
   const handleOpenHistory = useCallback(() => {
     exit(() => setView('history'));
-  }, []);
+  }, [exit]);
   const handleOpenFaq = useCallback(() => {
     exit(() => setView('faq'));
-  }, []);
+  }, [exit]);
 
   const handleBackToLanding = useCallback(() => {
     exit(() => {
@@ -153,9 +149,9 @@ export default function App() {
       setIsSample(false);
       resumedEntryAt.current = null;
       setLeaveDialog(null);
-      resetSelection();
+      setSelections(EMPTY_SELECTION);
     });
-  }, []);
+  }, [exit]);
   const hasTrialProgress = Boolean(gameState) && gameState.graveyard.length > 0;
   const handleAbandonSession = useCallback(() => {
     if (hasTrialProgress && !gameState.finished && !isSample) {
@@ -214,7 +210,7 @@ export default function App() {
     }
     const executedRecord = executed.state.graveyard[executed.state.graveyard.length - 1];
     setGameState(executed.state);
-    resetSelection();
+    setSelections(EMPTY_SELECTION);
     if (executed.state.finished) {
       recordSession(executed.state, resumedEntryAt.current);
       playSound('winner');
@@ -243,7 +239,7 @@ export default function App() {
     const record = pardoned.state.graveyard[pardoned.state.graveyard.length - 1];
     playSound('pardon');
     setGameState(pardoned.state);
-    resetSelection();
+    setSelections(EMPTY_SELECTION);
     announce(
       `${record.optionLabel} is pardoned. The Royal Pardon is spent. Now ${pardoned.state.players[pardoned.state.currentPlayerIndex]}'s turn.`
     );
@@ -269,14 +265,6 @@ export default function App() {
       announce('Could not copy the link. Select and copy it manually.');
     }
   }, [shareUrl, announce]);
-
-  const pageKey = view === 'stage' && gameState && gameState.finished ? 'finished' : view;
-  const pageRef = usePageEnter(pageKey);
-  const runExit = usePageExit();
-  const exit = useCallback(
-    (navigate) => runExit(pageRef.current, navigate),
-    [runExit, pageRef]
-  );
 
   if (view === 'shared') {
     if (!shareResult || !shareResult.ok) {

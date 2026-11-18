@@ -11,6 +11,14 @@ export function readHistory() {
   }
 }
 
+function writeHistory(entries) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+  } catch {
+    return;
+  }
+}
+
 function snapshotOf(state) {
   const { title, players, options, currentPlayerIndex, round, pardonAvailable, graveyard } = state;
   return { title, players, options, currentPlayerIndex, round, pardonAvailable, graveyard };
@@ -37,8 +45,16 @@ export function recordSession(state, replacedEntryAt) {
       item.at !== replacedEntryAt &&
       !(item.title === entry.title && item.winner === entry.winner && entry.at - item.at < 60000)
   );
+  writeHistory([entry, ...rest].slice(0, MAX_ENTRIES));
+}
+
+export function deleteSession(at) {
+  writeHistory(readHistory().filter((item) => item.at !== at));
+}
+
+export function clearHistory() {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify([entry, ...rest].slice(0, MAX_ENTRIES)));
+    localStorage.removeItem(STORAGE_KEY);
   } catch {
     return;
   }

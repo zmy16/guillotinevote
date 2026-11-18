@@ -1,7 +1,8 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useId, useRef } from 'react';
 
-export function LeaveConfirm({ onConfirm, onCancel }) {
+export function ConfirmDialog({ title, body, cancelLabel, confirmLabel, onConfirm, onCancel }) {
   const dialogRef = useRef(null);
+  const titleId = useId();
 
   useEffect(() => {
     const node = dialogRef.current;
@@ -20,19 +21,17 @@ export function LeaveConfirm({ onConfirm, onCancel }) {
   }, [onCancel]);
 
   return (
-    <dialog className="confirm-dialog" ref={dialogRef} aria-labelledby="leave-dialog-title">
-      <h2 className="confirm-dialog-title" id="leave-dialog-title">
-        Abandon the trial?
+    <dialog className="confirm-dialog" ref={dialogRef} aria-labelledby={titleId}>
+      <h2 className="confirm-dialog-title" id={titleId}>
+        {title}
       </h2>
-      <p className="confirm-dialog-body">
-        Leaving now closes the docket. The rounds you already played are kept in Match history as an unfinished trial, and you can resume it from there.
-      </p>
+      <p className="confirm-dialog-body">{body}</p>
       <div className="confirm-dialog-actions">
         <button type="button" className="button button-ghost" onClick={onCancel}>
-          Keep playing
+          {cancelLabel}
         </button>
         <button type="button" className="button button-danger-ghost" onClick={onConfirm}>
-          Leave the court
+          {confirmLabel}
         </button>
       </div>
     </dialog>

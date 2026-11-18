@@ -9,7 +9,7 @@ import { HistoryPage, FaqPage } from './components/InfoPages.jsx';
 import { Stage } from './components/Stage.jsx';
 import { Graveyard, WinnerDecree, ResultView, InvalidShare } from './components/Result.jsx';
 import { HalloweenBackdrop, GuillotineMark } from './components/HalloweenBackdrop.jsx';
-import { LeaveConfirm } from './components/LeaveConfirm.jsx';
+import { ConfirmDialog } from './components/ConfirmDialog.jsx';
 import { usePageEnter, usePageExit } from './usePageEnter.js';
 
 function readShareParam() {
@@ -385,7 +385,11 @@ export default function App() {
               </button>
             </div>
             {leaveDialog && (
-              <LeaveConfirm
+              <ConfirmDialog
+                title="Abandon the trial?"
+                body="Leaving now closes the docket. The rounds you already played are kept in Match history as an unfinished trial, and you can resume it from there."
+                cancelLabel="Keep playing"
+                confirmLabel="Leave the court"
                 onConfirm={handleAbandonSession}
                 onCancel={handleLeaveCancel}
               />

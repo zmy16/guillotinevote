@@ -1,6 +1,8 @@
-import { ArrowLeft } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { ArrowLeft, Crown, Hourglass, Play, Skull, Trash2, Users } from 'lucide-react';
 import { BrandChip } from './HalloweenBackdrop.jsx';
-import { readHistory } from '../history.js';
+import { ConfirmDialog } from './ConfirmDialog.jsx';
+import { readHistory, deleteSession, clearHistory } from '../history.js';
 import { restoreGame } from '../engine.js';
 
 const FAQ_ITEMS = [
@@ -47,34 +49,125 @@ function BackButton({ onBack }) {
   );
 }
 
-function HistoryItem({ item, onResume }) {
+function pluralize(count, noun) {
+  return `${count} ${noun}${count === 1 ? '' : 's'}`;
+}
+
+function formatTimestamp(at) {
+  return new Date(at).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
+}
+
+function HistoryItem({ item, onResume, onDelete }) {
   const isUnfinished = item.status === 'unfinished';
   const restored = isUnfinished ? restoreGame(item.snapshot) : null;
+  const totalOptions = item.executions + item.survivors;
+  const StatusIcon = isUnfinished ? Hourglass : Crown;
   return (
     <li className="history-item" data-status={isUnfinished ? 'unfinished' : 'finished'}>
-      <span className="history-winner">{item.winner || 'Unfinished trial'}</span>
-      <span className="history-detail">
-        {item.title} · {item.players} players · {item.executions} executions
-        {isUnfinished ? ` · ${item.survivors} still standing` : ''} · {new Date(item.at).toLocaleDateString()}
-      </span>
-      {restored && restored.ok && (
-        <button type="button" className="button button-ghost history-resume" onClick={() => onResume(item.at, restored.state)}>
-          Resume trial
+      <div className="history-main">
+        <div className="history-top">
+          <span className="history-badge">
+            <StatusIcon size={13} aria-hidden="true" />
+            {isUnfinished ? 'Unfinished' : 'Finished'}
+          </span>
+          <time className="history-date" dateTime={new Date(item.at).toISOString()}>
+            {formatTimestamp(item.at)}
+          </time>
+        </div>
+        <h3 className="history-title">{item.title}</h3>
+        <p className="history-result">
+          {isUnfinished ? (
+            `${item.survivors} of ${totalOptions} options still standing`
+          ) : (
+            <>
+              Sole survivor <strong className="history-winner">{item.winner}</strong>
+            </>
+          )}
+        </p>
+        <ul className="history-stats" aria-label="Trial details">
+          <li className="history-stat">
+            <Users size={14} aria-hidden="true" />
+            {pluralize(item.players, 'player')}
+          </li>
+          <li className="history-stat">
+            <Skull size={14} aria-hidden="true" />
+            {pluralize(item.executions, 'execution')}
+          </li>
+        </ul>
+      </div>
+      <div className="history-actions">
+        {restored && restored.ok && (
+          <button type="button" className="button button-ghost history-resume" onClick={() => onResume(item.at, restored.state)}>
+            <Play size={16} aria-hidden="true" />
+            Resume trial
+          </button>
+        )}
+        <button type="button" className="history-delete" onClick={() => onDelete(item)} aria-label={`Delete ${item.title}`} title="Delete this trial">
+          <Trash2 size={18} aria-hidden="true" />
         </button>
-      )}
+      </div>
     </li>
   );
 }
 
+function deletionDialogProps(pendingDeletion) {
+  if (pendingDeletion.scope === 'all') {
+    return {
+      title: 'Delete all history?',
+      body: 'Every recorded trial, including unfinished ones you could still resume, is erased from this device. This cannot be undone.',
+      confirmLabel: 'Delete all'
+    };
+  }
+  const { item } = pendingDeletion;
+  return {
+    title: 'Delete this trial?',
+    body:
+      item.status === 'unfinished'
+        ? `${item.title} is unfinished. Deleting it means it can no longer be resumed.`
+        : `${item.title} is removed from this device. This cannot be undone.`,
+    confirmLabel: 'Delete trial'
+  };
+}
+
 export function HistoryPage({ onBack, onResume }) {
-  const history = readHistory();
+  const [history, setHistory] = useState(readHistory);
+  const [pendingDeletion, setPendingDeletion] = useState(null);
+  const [statusMessage, setStatusMessage] = useState('');
+  const headingRef = useRef(null);
+
+  function handleConfirmDeletion() {
+    if (pendingDeletion.scope === 'all') {
+      clearHistory();
+      setStatusMessage('All trials deleted.');
+    } else {
+      deleteSession(pendingDeletion.item.at);
+      setStatusMessage(`${pendingDeletion.item.title} deleted.`);
+    }
+    setHistory(readHistory());
+    setPendingDeletion(null);
+    requestAnimationFrame(() => headingRef.current?.focus());
+  }
+
   return (
     <div className="page">
       <div className="page-top">
         <BackButton onBack={onBack} />
         <BrandChip />
       </div>
-      <h1>Match history</h1>
+      <p className="visually-hidden" role="status">
+        {statusMessage}
+      </p>
+      <div className="history-head">
+        <h1 ref={headingRef} tabIndex={-1}>
+          Match history
+        </h1>
+        {history.length > 0 && (
+          <button type="button" className="button button-danger-ghost history-clear" onClick={() => setPendingDeletion({ scope: 'all' })}>
+            <Trash2 size={16} aria-hidden="true" />
+            Delete all
+          </button>
+        )}
+      </div>
       <p className="section-sub" style={{ marginTop: 'var(--space-2)' }}>
         {history.length > 0
           ? `Your last ${history.length} ${history.length === 1 ? 'trial' : 'trials'}, finished or abandoned. Stored on this device only.`
@@ -87,17 +180,29 @@ export function HistoryPage({ onBack, onResume }) {
         {history.length > 0 ? (
           <ol className="history-list">
             {history.map((item) => (
-              <HistoryItem key={`${item.at}-${item.title}`} item={item} onResume={onResume} />
+              <HistoryItem
+                key={`${item.at}-${item.title}`}
+                item={item}
+                onResume={onResume}
+                onDelete={(target) => setPendingDeletion({ scope: 'one', item: target })}
+              />
             ))}
           </ol>
         ) : (
           <p className="history-empty">No trials recorded yet. Run one to start the record.</p>
         )}
       </section>
+      {pendingDeletion && (
+        <ConfirmDialog
+          {...deletionDialogProps(pendingDeletion)}
+          cancelLabel="Keep it"
+          onConfirm={handleConfirmDeletion}
+          onCancel={() => setPendingDeletion(null)}
+        />
+      )}
     </div>
   );
 }
-
 export function FaqPage({ onBack }) {
   return (
     <div className="page">

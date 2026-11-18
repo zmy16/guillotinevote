@@ -270,6 +270,11 @@ html {
 }
 
 .brand-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-3);
   max-width: 1080px;
   margin: 0 auto;
   padding: var(--space-5) var(--space-4) 0;

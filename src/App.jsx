@@ -278,12 +278,19 @@ export default function App() {
   }
 
   const backdrop = <HalloweenBackdrop variant={view} />;
+  const isTrialInProgress = view === 'stage' && Boolean(gameState) && !gameState.finished;
   const brandBar = (
     <div className="brand-bar">
       <div className="brand">
         <GuillotineMark className="brand-mark" />
         GuillotineVote
       </div>
+      {isTrialInProgress && (
+        <button type="button" className="button button-ghost exit-button" onClick={handleLeaveRequest}>
+          <ArrowLeft size={16} aria-hidden="true" />
+          Leave the court
+        </button>
+      )}
     </div>
   );
 
@@ -377,12 +384,6 @@ export default function App() {
               <p className="share-warning" style={{ marginTop: 'var(--space-6)' }}>
                 Pass the device to the next player. No account, no backend, no votes to count.
               </p>
-            </div>
-            <div className="page" style={{ paddingTop: 0 }}>
-              <button type="button" className="button button-ghost exit-button" onClick={handleLeaveRequest}>
-                <ArrowLeft size={16} aria-hidden="true" />
-                Leave the court
-              </button>
             </div>
             {leaveDialog && (
               <ConfirmDialog

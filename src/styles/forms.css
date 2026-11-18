@@ -162,6 +162,13 @@
   background: rgba(245, 158, 11, 0.1);
 }
 
+@media (max-width: 480px) {
+  .brand-bar .exit-button {
+    min-height: 44px;
+    padding: 8px 14px;
+  }
+}
+
 .page-top {
   display: flex;
   align-items: center;

@@ -20,6 +20,9 @@ function readShareParam() {
   return params.get('r');
 }
 
+const LEAVE_BODY_SAVED = 'Leaving now closes the docket. The rounds you already played are kept in Match history as an unfinished trial, and you can resume it from there.';
+const LEAVE_BODY_NOTHING_SAVED = 'Leaving now closes the docket. Nothing is saved to Match history.';
+
 const VIEW_HASHES = { setup: '#/setup', history: '#/history', faq: '#/faq' };
 
 function readInitialView(shareParam) {
@@ -152,20 +155,14 @@ export default function App() {
       resetSelection();
     });
   }, []);
+  const hasTrialProgress = Boolean(gameState) && gameState.graveyard.length > 0;
   const handleAbandonSession = useCallback(() => {
-    if (gameState && !gameState.finished && !isSample) {
+    if (hasTrialProgress && !gameState.finished && !isSample) {
       recordSession(gameState, resumedEntryAt.current);
     }
     handleBackToLanding();
-  }, [gameState, isSample, handleBackToLanding]);
-  const handleLeaveRequest = useCallback(() => {
-    const hasProgress = Boolean(gameState) && gameState.graveyard.length > 0;
-    if (!hasProgress) {
-      handleBackToLanding();
-      return;
-    }
-    setLeaveDialog('leave');
-  }, [gameState, handleBackToLanding]);
+  }, [gameState, hasTrialProgress, isSample, handleBackToLanding]);
+  const handleLeaveRequest = useCallback(() => setLeaveDialog('leave'), []);
   const handleLeaveCancel = useCallback(() => setLeaveDialog(null), []);
 
   const handleSelectOption = useCallback(
@@ -299,6 +296,7 @@ export default function App() {
 
   const backdrop = <HalloweenBackdrop variant={view} />;
   const isTrialInProgress = view === 'stage' && Boolean(gameState) && !gameState.finished;
+  const leaveDialogBody = hasTrialProgress && !isSample ? LEAVE_BODY_SAVED : LEAVE_BODY_NOTHING_SAVED;
   const brandBar = (
     <div className="brand-bar">
       <div className="brand">
@@ -408,7 +406,7 @@ export default function App() {
             {leaveDialog && (
               <ConfirmDialog
                 title="Abandon the trial?"
-                body="Leaving now closes the docket. The rounds you already played are kept in Match history as an unfinished trial, and you can resume it from there."
+                body={leaveDialogBody}
                 cancelLabel="Keep playing"
                 confirmLabel="Leave the court"
                 onConfirm={handleAbandonSession}

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
-import { createGame, selectOption, selectVerdict, executeSelected, useRoyalPardon, encodeShareState, decodeShareState } from './engine.js';import { SAMPLE_SETUP } from './presets.js';
+import { createGame, selectOption, selectVerdict, executeSelected, grantRoyalPardon, encodeShareState, decodeShareState } from './engine.js';import { SAMPLE_SETUP } from './presets.js';
 import { recordSession } from './history.js';
 import { playSound, isMuted, setMuted } from './sound.js';
 import { Landing } from './components/Landing.jsx';
@@ -235,7 +235,7 @@ export default function App() {
       announce(withSelection.error);
       return;
     }
-    const pardoned = useRoyalPardon(withSelection.state);
+    const pardoned = grantRoyalPardon(withSelection.state);
     if (!pardoned.ok) {
       announce(pardoned.error);
       return;

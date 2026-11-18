@@ -5,7 +5,7 @@ import {
   selectOption,
   selectVerdict,
   executeSelected,
-  useRoyalPardon,
+  grantRoyalPardon,
   encodeShareState,
   decodeShareState,
   MAX_OPTIONS,
@@ -81,7 +81,7 @@ function playToCompletionWithPardon(setup, pardonTurn) {
     state = selectVerdict(state, { kind }).state;
     if (!pardonUsed && steps === pardonTurn) {
       const aliveBefore = state.options.filter((option) => option.status === 'alive').length;
-      const pardonResult = useRoyalPardon(state);
+      const pardonResult = grantRoyalPardon(state);
       if (!pardonResult.ok) {
         return null;
       }
@@ -93,7 +93,7 @@ function playToCompletionWithPardon(setup, pardonTurn) {
       if (aliveBefore !== aliveAfter || !pardonedOptionStillAlive) {
         return null;
       }
-      const secondPardon = useRoyalPardon(selectOption(state, target.id).state);
+      const secondPardon = grantRoyalPardon(selectOption(state, target.id).state);
       if (secondPardon.ok) {
         return null;
       }
@@ -142,7 +142,7 @@ describe('engine invariants', () => {
       if (state.options.filter((option) => option.status === 'alive').length !== 1) {
         return false;
       }
-      return !useRoyalPardon(state).ok;
+      return !grantRoyalPardon(state).ok;
     });
     fc.assert(prop);
   });

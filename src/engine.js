@@ -1,9 +1,31 @@
+export const PRESET_VERDICTS = ['too_expensive', 'too_far', 'boring', 'not_today'];
+
+export const VERDICT_LABELS = {
+  too_expensive: 'Too Expensive',
+  too_far: 'Too Far',
+  boring: 'Boring',
+  not_today: 'Not Today'
+};
+
+export const MIN_PLAYERS = 2;
+export const MAX_PLAYERS = 8;
+export const MIN_OPTIONS = 3;
+export const MAX_OPTIONS = 12;
+export const MAX_VERDICT_LENGTH = 40;
+const MAX_SHARE_LENGTH = 8000;
+const SHARE_VERSION = 1;
+const RESTORE_ERROR = 'This trial can no longer be resumed.';
+
+function trimmedNames(values) {
+  return (values || []).map((value) => (typeof value === 'string' ? value.trim() : ''));
+}
+
 export function createGame(setup) {
   const errors = validateSetup(setup);
   if (errors.length > 0) {
     return { ok: false, errors };
   }
-  const options = setup.options.map((label, index) => ({
+  const options = trimmedNames(setup.options).map((label, index) => ({
     id: `opt-${index}`,
     label,
     status: 'alive'
@@ -12,7 +34,7 @@ export function createGame(setup) {
     ok: true,
     state: {
       title: setup.title,
-      players: setup.players,
+      players: trimmedNames(setup.players),
       options,
       currentPlayerIndex: 0,
       round: 1,
@@ -137,8 +159,8 @@ function isRestorableSnapshot(snapshot) {
 
 function validateSetup(setup) {
   const errors = [];
-  const players = (setup.players || []).map((name) => (typeof name === 'string' ? name.trim() : ''));
-  const options = (setup.options || []).map((label) => (typeof label === 'string' ? label.trim() : ''));
+  const players = trimmedNames(setup.players);
+  const options = trimmedNames(setup.options);
   if (players.length < MIN_PLAYERS || players.length > MAX_PLAYERS) {
     errors.push(`Players must be between ${MIN_PLAYERS} and ${MAX_PLAYERS}.`);
   }
@@ -227,7 +249,7 @@ export function executeSelected(state) {
   return advance(state, { options, graveyard: [...state.graveyard, record] }, option.id);
 }
 
-export function useRoyalPardon(state) {
+export function grantRoyalPardon(state) {
   if (state.finished) {
     return reject(state, 'The game is already complete.');
   }
@@ -238,6 +260,9 @@ export function useRoyalPardon(state) {
     return reject(state, 'Select an option before using the Royal Pardon.');
   }
   const option = state.options.find((candidate) => candidate.id === state.selection);
+  if (!option || option.status !== 'alive') {
+    return reject(state, 'Only a living option can be pardoned.');
+  }
   const record = {
     kind: 'pardon',
     optionId: option.id,
@@ -305,105 +330,101 @@ export function encodeShareState(state) {
   return btoa(binary);
 }
 
+const MALFORMED_ENTRY = 'Share data has a malformed graveyard entry.';
+const INVALID_VERDICT = 'Share data has an invalid verdict.';
+
+function parseSharePayload(encoded) {
+  try {
+    const binary = atob(encoded);
+    const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
+    return JSON.parse(new TextDecoder().decode(bytes));
+  } catch {
+    return null;
+  }
+}
+
+function decodeShareVerdict(kind, text) {
+  if (PRESET_VERDICTS.includes(kind)) {
+    return { kind };
+  }
+  if (kind === 'other' && typeof text === 'string' && text.length > 0 && text.length <= MAX_VERDICT_LENGTH) {
+    return { kind: 'other', text };
+  }
+  return null;
+}
+
+function decodeShareEntry(entry) {
+  if (!Array.isArray(entry) || entry.length !== 7) {
+    return { error: MALFORMED_ENTRY };
+  }
+  const [pardonFlag, optionId, optionLabel, player, round, verdictKind, verdictText] = entry;
+  if (pardonFlag !== 0 && pardonFlag !== 1) {
+    return { error: MALFORMED_ENTRY };
+  }
+  if (![optionId, optionLabel, player].every(isNonBlankString) || !Number.isInteger(round) || round < 1) {
+    return { error: MALFORMED_ENTRY };
+  }
+  const isPardon = pardonFlag === 1;
+  const verdict = isPardon ? null : decodeShareVerdict(verdictKind, verdictText);
+  if (!isPardon && !verdict) {
+    return { error: INVALID_VERDICT };
+  }
+  return { record: { kind: isPardon ? 'pardon' : 'execution', optionId, optionLabel, player, round, verdict } };
+}
+
+function decodeShareGraveyard(entries) {
+  const graveyard = [];
+  for (const entry of entries) {
+    const decoded = decodeShareEntry(entry);
+    if (decoded.error) {
+      return decoded;
+    }
+    graveyard.push(decoded.record);
+  }
+  const executions = graveyard.filter((record) => record.kind === 'execution');
+  const executedIds = new Set(executions.map((record) => record.optionId));
+  if (graveyard.length - executions.length > 1 || executedIds.size !== executions.length) {
+    return { error: 'Share data is inconsistent.' };
+  }
+  return { graveyard };
+}
+
 export function decodeShareState(encoded) {
   if (typeof encoded !== 'string' || encoded.length === 0 || encoded.length > MAX_SHARE_LENGTH) {
     return { ok: false, error: 'Share data is missing or too large.' };
   }
-  let json;
-  try {
-    const binary = atob(encoded);
-    const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
-    json = new TextDecoder().decode(bytes);
-  } catch {
+  const payload = parseSharePayload(encoded);
+  if (!payload || typeof payload !== 'object') {
     return { ok: false, error: 'Share data is malformed.' };
   }
-  let payload;
-  try {
-    payload = JSON.parse(json);
-  } catch {
-    return { ok: false, error: 'Share data is malformed.' };
-  }
-  if (!payload || payload.v !== SHARE_VERSION) {
+  if (payload.v !== SHARE_VERSION) {
     return { ok: false, error: 'Unsupported share data version.' };
   }
-  if (!Array.isArray(payload.p) || payload.p.length < MIN_PLAYERS || payload.p.length > MAX_PLAYERS) {
+  const { p: players, w: winner, g: entries } = payload;
+  if (!Array.isArray(players) || players.length < MIN_PLAYERS || players.length > MAX_PLAYERS || !players.every(isNonBlankString)) {
     return { ok: false, error: 'Share data has invalid players.' };
   }
-  if (typeof payload.w !== 'string' || payload.w.length === 0) {
+  if (!isNonBlankString(winner)) {
     return { ok: false, error: 'Share data has no winner.' };
   }
-  if (!Array.isArray(payload.g) || payload.g.length < MIN_OPTIONS - 1 || payload.g.length > MAX_OPTIONS - 1) {
+  if (!Array.isArray(entries) || entries.length < MIN_OPTIONS - 1 || entries.length > MAX_OPTIONS - 1) {
     return { ok: false, error: 'Share data has an invalid graveyard.' };
   }
-  const graveyard = [];
-  for (const entry of payload.g) {
-    if (!Array.isArray(entry) || entry.length !== 7) {
-      return { ok: false, error: 'Share data has a malformed graveyard entry.' };
-    }
-    const [isPardon, optionId, optionLabel, player, round, verdictKind, verdictText] = entry;
-    if (typeof optionId !== 'string' || optionId.length === 0) {
-      return { ok: false, error: 'Share data has a malformed graveyard entry.' };
-    }
-    if (typeof optionLabel !== 'string' || optionLabel.length === 0) {
-      return { ok: false, error: 'Share data has a malformed graveyard entry.' };
-    }
-    if (typeof player !== 'string' || player.length === 0) {
-      return { ok: false, error: 'Share data has a malformed graveyard entry.' };
-    }
-    if (!Number.isInteger(round) || round < 1) {
-      return { ok: false, error: 'Share data has a malformed graveyard entry.' };
-    }
-    let verdict = null;
-    if (isPardon === 0) {
-      if (PRESET_VERDICTS.includes(verdictKind)) {
-        verdict = { kind: verdictKind };
-      } else if (verdictKind === 'other') {
-        if (typeof verdictText !== 'string' || verdictText.length === 0 || verdictText.length > MAX_VERDICT_LENGTH) {
-          return { ok: false, error: 'Share data has an invalid verdict.' };
-        }
-        verdict = { kind: 'other', text: verdictText };
-      } else {
-        return { ok: false, error: 'Share data has an invalid verdict.' };
-      }
-    }
-    graveyard.push({
-      kind: isPardon === 1 ? 'pardon' : 'execution',
-      optionId,
-      optionLabel,
-      player,
-      round,
-      verdict
-    });
+  const decoded = decodeShareGraveyard(entries);
+  if (decoded.error) {
+    return { ok: false, error: decoded.error };
   }
-  const executions = graveyard.filter((record) => record.kind === 'execution').length;
-  if (executions !== payload.g.length - graveyard.filter((record) => record.kind === 'pardon').length) {
+  const winnerWasExecuted = decoded.graveyard.some((record) => record.kind === 'execution' && record.optionLabel === winner);
+  if (winnerWasExecuted) {
     return { ok: false, error: 'Share data is inconsistent.' };
   }
   return {
     ok: true,
     result: {
       title: typeof payload.t === 'string' ? payload.t : '',
-      players: payload.p,
-      winner: payload.w,
-      graveyard
+      players,
+      winner,
+      graveyard: decoded.graveyard
     }
   };
 }
-
-export const PRESET_VERDICTS = ['too_expensive', 'too_far', 'boring', 'not_today'];
-
-export const VERDICT_LABELS = {
-  too_expensive: 'Too Expensive',
-  too_far: 'Too Far',
-  boring: 'Boring',
-  not_today: 'Not Today'
-};
-
-export const MIN_PLAYERS = 2;
-export const MAX_PLAYERS = 8;
-export const MIN_OPTIONS = 3;
-export const MAX_OPTIONS = 12;
-export const MAX_VERDICT_LENGTH = 40;
-export const MAX_SHARE_LENGTH = 4000;
-export const SHARE_VERSION = 1;
-const RESTORE_ERROR = 'This trial can no longer be resumed.';

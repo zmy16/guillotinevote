@@ -1,11 +1,23 @@
 const STORAGE_KEY = 'guillotinevote.history';
 const MAX_ENTRIES = 8;
 
+function isHistoryEntry(item) {
+  return (
+    Boolean(item) &&
+    typeof item === 'object' &&
+    (item.status === 'finished' || item.status === 'unfinished') &&
+    typeof item.title === 'string' &&
+    (item.status === 'unfinished' || typeof item.winner === 'string') &&
+    [item.players, item.executions, item.survivors].every(Number.isInteger) &&
+    Number.isFinite(new Date(item.at).getTime())
+  );
+}
+
 export function readHistory() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     const parsed = raw ? JSON.parse(raw) : [];
-    return Array.isArray(parsed) ? parsed : [];
+    return Array.isArray(parsed) ? parsed.filter(isHistoryEntry) : [];
   } catch {
     return [];
   }

@@ -82,20 +82,27 @@ html {
   width: 120px;
   height: 120px;
   color: var(--gold-300);
-  opacity: 0.18;
-  filter: drop-shadow(0 0 40px rgba(253, 230, 138, 0.4));
-  animation: moonPulse 7s ease-in-out infinite;
+  opacity: 0.24;
+}
+
+.backdrop-moon::before {
+  content: '';
+  position: absolute;
+  inset: -70%;
+  background: radial-gradient(closest-side, rgba(253, 230, 138, 0.3), transparent);
 }
 
 @keyframes moonPulse {
-  0%, 100% { transform: scale(1); opacity: 0.18; }
-  50% { transform: scale(1.06); opacity: 0.24; }
+  0%, 100% { transform: scale(1); opacity: 0.75; }
+  50% { transform: scale(1.06); opacity: 1; }
 }
 
 .backdrop-moon svg {
+  position: relative;
   display: block;
   width: 100%;
   height: 100%;
+  animation: moonPulse 7s ease-in-out infinite;
 }
 
 .backdrop-hills {
@@ -135,34 +142,79 @@ html {
 
 .sky-graveyard {
   left: 0;
-  bottom: 0;
-  width: clamp(230px, 30vw, 420px);
+  bottom: 3vh;
+  width: clamp(300px, 40vw, 600px);
   color: #05010c;
-  opacity: 0.9;
-  filter: drop-shadow(0 -6px 30px rgba(139, 92, 246, 0.5));
-  -webkit-mask-image: linear-gradient(to bottom, #000 82%, transparent 100%);
-  mask-image: linear-gradient(to bottom, #000 82%, transparent 100%);
 }
 
 .sky-manor {
-  right: -3%;
+  right: -2%;
   bottom: -1vh;
-  width: auto;
-  height: min(41vh, 32vw);
-  opacity: 1;
+  width: clamp(300px, 40vw, 640px);
+  color: #06020d;
+}
+
+.backdrop-ground {
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 30vh;
+  background: linear-gradient(to top, #05020a 40%, transparent);
+}
+
+.backdrop-far {
+  position: absolute;
+  left: 0;
+  bottom: 18%;
+  width: 100%;
+  height: 22vh;
+  opacity: 0.85;
+  pointer-events: none;
+}
+
+.backdrop-foreground {
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 30vh;
+  pointer-events: none;
+}
+
+.backdrop-foreground::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -180px;
+  height: calc(180px + 9vh);
+  background: linear-gradient(to top, #05020a calc(180px + 1vh), transparent);
+}
+
+.manor-window {
+  animation: pumpkinFlicker 4.6s ease-in-out infinite;
+}
+
+.grave-lantern {
+  animation: pumpkinFlicker 2.8s ease-in-out infinite;
+}
+
+.grave-crypt-glow {
+  animation: cryptPulse 6s ease-in-out infinite;
+}
+
+@keyframes cryptPulse {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 0.9; }
 }
 
 @media (max-width: 820px) {
   .sky-manor {
-    right: -6%;
-    bottom: -2vh;
-    width: clamp(150px, 46vw, 260px);
-    opacity: 0.75;
+    right: -14%;
+    bottom: -1vh;
+    width: clamp(250px, 84vw, 380px);
   }
 
   .sky-graveyard {
-    width: clamp(180px, 46vw, 230px);
-    opacity: 0.7;
+    left: -6%;
+    width: clamp(240px, 74vw, 360px);
   }
 }
 
@@ -199,8 +251,8 @@ html {
   position: absolute;
   width: clamp(48px, 6vw, 86px);
   height: auto;
-  color: #1b1030;
-  opacity: 0.7;
+  color: #4a2a82;
+  opacity: 0.8;
   animation: batFlight linear infinite;
   will-change: transform;
 }
@@ -215,7 +267,96 @@ html {
 
 .bat-a { top: 12%; animation-duration: 26s; animation-delay: -2s; }
 .bat-b { top: 22%; animation-duration: 34s; animation-delay: -14s; }
-.bat-c { top: 7%; animation-duration: 44s; animation-delay: -26s; color: #241437; opacity: 0.55; }
+.bat-c { top: 7%; animation-duration: 44s; animation-delay: -26s; color: #3a2063; opacity: 0.6; }
+.bat-d { top: 34%; width: clamp(30px, 3.4vw, 52px); animation-duration: 30s; animation-delay: -9s; animation-direction: reverse; scale: -1 1; color: #3a2063; opacity: 0.6; }
+.bat-e { top: 17%; width: clamp(26px, 3vw, 44px); animation-duration: 21s; animation-delay: -11s; animation-direction: reverse; scale: -1 1; color: #3a2063; opacity: 0.5; }
+.bat-f { top: 28%; width: clamp(34px, 4vw, 60px); animation-duration: 38s; animation-delay: -30s; color: #3a2063; opacity: 0.65; }
+
+.backdrop-spider {
+  position: absolute;
+  top: 0;
+  left: 2%;
+  width: clamp(18px, 2vw, 30px);
+  height: auto;
+  transform-origin: 50% 0;
+  animation: spiderSway 6s ease-in-out infinite;
+}
+
+@keyframes spiderSway {
+  0%, 100% { transform: rotate(-3deg) translateY(0); }
+  50% { transform: rotate(3deg) translateY(2.5vh); }
+}
+
+.backdrop-embers span {
+  position: absolute;
+  bottom: -2vh;
+  width: var(--ember-size);
+  height: var(--ember-size);
+  border-radius: 50%;
+  background: var(--gold-500);
+  box-shadow: 0 0 6px 1px rgba(249, 115, 22, 0.7);
+  opacity: 0;
+  animation: emberRise var(--ember-duration) linear infinite;
+  animation-delay: var(--ember-delay);
+}
+
+@keyframes emberRise {
+  0% { transform: translate3d(0, 0, 0); opacity: 0; }
+  12% { opacity: 0.85; }
+  60% { opacity: 0.5; }
+  100% { transform: translate3d(var(--ember-drift), -70vh, 0); opacity: 0; }
+}
+
+.backdrop-vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 40%, transparent 55%, rgba(5, 2, 10, 0.55) 100%);
+}
+
+.sky-pumpkin {
+  position: absolute;
+  display: block;
+  width: var(--pumpkin-size, clamp(70px, 8vw, 128px));
+}
+
+.pumpkin-art {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.pumpkin-halo {
+  position: absolute;
+  inset: -40% -50% -30%;
+  background: radial-gradient(closest-side, rgba(249, 115, 22, 0.42), rgba(245, 158, 11, 0.14) 55%, transparent 100%);
+  animation: pumpkinFlicker 3.4s ease-in-out infinite;
+  animation-delay: var(--flicker-delay, 0s);
+}
+
+.jack-face {
+  animation: pumpkinFlicker 3.4s ease-in-out infinite;
+  animation-delay: var(--flicker-delay, 0s);
+}
+
+@keyframes pumpkinFlicker {
+  0%, 100% { opacity: 1; }
+  18% { opacity: 0.82; }
+  34% { opacity: 0.96; }
+  52% { opacity: 0.74; }
+  70% { opacity: 1; }
+  85% { opacity: 0.88; }
+}
+
+.pumpkin-a { left: 3.5%; bottom: 1vh; --flicker-delay: -1s; }
+.pumpkin-b { left: 11%; bottom: -0.5vh; --pumpkin-size: clamp(44px, 5vw, 80px); --flicker-delay: -2.3s; }
+.pumpkin-c { right: 4%; bottom: 0; --pumpkin-size: clamp(54px, 6vw, 96px); --flicker-delay: -0.4s; }
+
+@media (max-width: 820px) {
+  .pumpkin-a { left: 38%; --pumpkin-size: clamp(60px, 20vw, 92px); }
+  .pumpkin-b { left: 58%; --pumpkin-size: clamp(40px, 13vw, 60px); }
+  .pumpkin-c { display: none; }
+}
 
 @media (prefers-reduced-motion: reduce) {
   .backdrop-bat {
@@ -225,6 +366,23 @@ html {
 
   .bat-b { left: 42%; }
   .bat-c { left: 76%; }
+  .bat-d { left: 24%; }
+  .bat-e { left: 60%; }
+  .bat-f { left: 90%; }
+
+  .backdrop-spider,
+  .backdrop-moon svg,
+  .pumpkin-halo,
+  .jack-face,
+  .manor-window,
+  .grave-lantern,
+  .grave-crypt-glow {
+    animation: none;
+  }
+
+  .backdrop-embers {
+    display: none;
+  }
 }
 
 

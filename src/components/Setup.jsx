@@ -1,7 +1,16 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { BrandChip } from './Brand.jsx';
+import { ConfirmDialog } from './ConfirmDialog.jsx';
 import { DEFAULT_PLAYERS } from '../presets.js';
+import { MIN_PLAYERS, MAX_PLAYERS, MIN_OPTIONS, MAX_OPTIONS } from '../engine.js';
+
+function removalDialogProps({ kind, label }) {
+  if (kind === 'player') {
+    return { title: 'Strike a name from the roll', body: `Remove ${label} from the court?` };
+  }
+  return { title: 'Drop a charge from the docket', body: `Remove “${label}” from the trial?` };
+}
 
 export function Setup({ initialTitle = '', initialOptions = [], onBack, onStarted }) {
   const [title, setTitle] = useState(initialTitle);
@@ -13,20 +22,6 @@ export function Setup({ initialTitle = '', initialOptions = [], onBack, onStarte
   const [fieldErrors, setFieldErrors] = useState({});
   const [summary, setSummary] = useState([]);
   const [pendingRemoval, setPendingRemoval] = useState(null);
-  const confirmDialog = useRef(null);
-
-  useEffect(() => {
-    const dialog = confirmDialog.current;
-    if (!dialog) {
-      return;
-    }
-    if (pendingRemoval && !dialog.open) {
-      dialog.showModal();
-    }
-    if (!pendingRemoval && dialog.open) {
-      dialog.close();
-    }
-  }, [pendingRemoval]);
 
   const draft = useMemo(
     () => ({
@@ -77,17 +72,13 @@ export function Setup({ initialTitle = '', initialOptions = [], onBack, onStarte
     setPendingRemoval(null);
   }
 
-  function handleBack() {
-    onBack();
-  }
-
   function validateLocal(draftState) {
     const errors = {};
     const summaryList = [];
     const players = draftState.players;
     const options = draftState.options;
-    if (players.length < 2 || players.length > 8) {
-      errors.players = 'You need between 2 and 8 players.';
+    if (players.length < MIN_PLAYERS || players.length > MAX_PLAYERS) {
+      errors.players = `You need between ${MIN_PLAYERS} and ${MAX_PLAYERS} players.`;
       summaryList.push(errors.players);
     }
     players.forEach((name, index) => {
@@ -96,8 +87,8 @@ export function Setup({ initialTitle = '', initialOptions = [], onBack, onStarte
         summaryList.push(`Player ${index + 1}: name cannot be blank.`);
       }
     });
-    if (options.length < 3 || options.length > 12) {
-      errors.options = 'You need between 3 and 12 options.';
+    if (options.length < MIN_OPTIONS || options.length > MAX_OPTIONS) {
+      errors.options = `You need between ${MIN_OPTIONS} and ${MAX_OPTIONS} options.`;
       summaryList.push(errors.options);
     }
     options.forEach((label, index) => {
@@ -133,7 +124,7 @@ export function Setup({ initialTitle = '', initialOptions = [], onBack, onStarte
   return (
     <div className="page">
       <div className="page-top">
-        <button type="button" className="back-link" onClick={handleBack}>
+        <button type="button" className="back-link" onClick={onBack}>
           <ArrowLeft aria-hidden="true" size={15} strokeWidth={2.2} />
           Back to the court
         </button>
@@ -175,7 +166,7 @@ export function Setup({ initialTitle = '', initialOptions = [], onBack, onStarte
         </fieldset>
 
         <fieldset className="fieldset">
-          <legend className="fieldset-legend">Players (2-8)</legend>
+          <legend className="fieldset-legend">Players ({MIN_PLAYERS}-{MAX_PLAYERS})</legend>
           <div className="field-grid">
             {playerInputs.map((name, index) => (
             <div className="field" key={`player-row-${index}`}>
@@ -196,7 +187,7 @@ export function Setup({ initialTitle = '', initialOptions = [], onBack, onStarte
                   placeholder={`Player ${index + 1}`}
                   maxLength={24}
                 />
-                {playerInputs.length > 2 && (
+                {playerInputs.length > MIN_PLAYERS && (
                   <button
                     type="button"
                     className="field-clear"
@@ -219,14 +210,14 @@ export function Setup({ initialTitle = '', initialOptions = [], onBack, onStarte
             type="button"
             className="button button-ghost"
             onClick={addPlayer}
-            disabled={playerInputs.length >= 8}
+            disabled={playerInputs.length >= MAX_PLAYERS}
           >
             Add player
           </button>
         </fieldset>
 
         <fieldset className="fieldset">
-          <legend className="fieldset-legend">Options on trial (3-12)</legend>
+          <legend className="fieldset-legend">Options on trial ({MIN_OPTIONS}-{MAX_OPTIONS})</legend>
           <div className="field-grid">
             {optionInputs.map((label, index) => (
             <div className="field" key={`option-row-${index}`}>
@@ -247,7 +238,7 @@ export function Setup({ initialTitle = '', initialOptions = [], onBack, onStarte
                   placeholder="The accused"
                   maxLength={40}
                 />
-                {optionInputs.length > 3 && (
+                {optionInputs.length > MIN_OPTIONS && (
                   <button
                     type="button"
                     className="field-clear"
@@ -270,7 +261,7 @@ export function Setup({ initialTitle = '', initialOptions = [], onBack, onStarte
             type="button"
             className="button button-ghost"
             onClick={addOption}
-            disabled={optionInputs.length >= 12}
+            disabled={optionInputs.length >= MAX_OPTIONS}
           >
             Add option
           </button>
@@ -280,37 +271,21 @@ export function Setup({ initialTitle = '', initialOptions = [], onBack, onStarte
           <button type="submit" className="button button-primary">
             Open the court
           </button>
-          <button type="button" className="button button-ghost" onClick={handleBack}>
+          <button type="button" className="button button-ghost" onClick={onBack}>
             Cancel
           </button>
         </div>
       </form>
 
-      <dialog
-        className="confirm-dialog"
-        ref={confirmDialog}
-        onClose={() => setPendingRemoval(null)}
-        aria-labelledby="confirm-dialog-title"
-      >
-        <h2 className="confirm-dialog-title" id="confirm-dialog-title">
-          {pendingRemoval && pendingRemoval.kind === 'player' ? 'Strike a name from the roll' : 'Drop a charge from the docket'}
-        </h2>
-        <p className="confirm-dialog-body">
-          {pendingRemoval
-            ? pendingRemoval.kind === 'player'
-              ? `Remove ${pendingRemoval.label} from the court?`
-              : `Remove “${pendingRemoval.label}” from the trial?`
-            : ''}
-        </p>
-        <div className="confirm-dialog-actions">
-          <button type="button" className="button button-ghost" onClick={() => setPendingRemoval(null)}>
-            Keep it
-          </button>
-          <button type="button" className="button button-danger-ghost" onClick={confirmRemoval}>
-            Remove
-          </button>
-        </div>
-      </dialog>
+      {pendingRemoval && (
+        <ConfirmDialog
+          {...removalDialogProps(pendingRemoval)}
+          cancelLabel="Keep it"
+          confirmLabel="Remove"
+          onConfirm={confirmRemoval}
+          onCancel={() => setPendingRemoval(null)}
+        />
+      )}
     </div>
   );
 }

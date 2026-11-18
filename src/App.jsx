@@ -156,6 +156,8 @@ export default function App() {
     setSelections((current) => ({ ...current, otherText: text }));
   }, []);
 
+  const handleBladeLand = useCallback(() => playSound('blade'), []);
+
   const handleExecute = useCallback(() => {
     if (!gameState) {
       return;
@@ -180,7 +182,6 @@ export default function App() {
       return;
     }
     const executedRecord = executed.state.graveyard[executed.state.graveyard.length - 1];
-    playSound('blade');
     setGameState(executed.state);
     resetSelection();
     if (executed.state.finished) {
@@ -351,6 +352,7 @@ export default function App() {
               onSelectOption={handleSelectOption}
               onSelectVerdict={handleSelectVerdict}
               onChangeOtherVerdict={handleChangeOtherVerdict}
+              onBladeLand={handleBladeLand}
               onExecute={handleExecute}
               onPardon={handlePardon}
               muted={muted}

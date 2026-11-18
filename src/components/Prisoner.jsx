@@ -36,7 +36,7 @@ function hashLabel(label) {
   return hash;
 }
 
-export function prisonerGlyphFor(label) {
+function prisonerGlyphFor(label) {
   return PRISONER_GLYPHS[hashLabel(label) % PRISONER_GLYPHS.length];
 }
 

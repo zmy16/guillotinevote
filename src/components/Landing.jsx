@@ -1,4 +1,4 @@
-import { GuillotineMark } from './HalloweenBackdrop.jsx';
+import { BrandChip } from './Brand.jsx';
 import { PRESETS } from '../presets.js';
 import { PumpkinArt, CoffinArt, SwordArt, ExecutionerHood, TombstoneArt, GhostArt, BatArt, Sparkle } from './Icons.jsx';
 
@@ -9,16 +9,12 @@ const PRESET_ICONS = {
   campus: SwordArt
 };
 
-
 export function Landing({ onChoosePreset, onStartCustom, onStartSample, onOpenHistory, onOpenFaq }) {
   return (
     <>
       <div className="page page-wide">
         <div className="landing-nav">
-          <div className="brand">
-            <GuillotineMark className="brand-mark" />
-            GuillotineVote
-          </div>
+          <BrandChip />
           <nav className="nav-links" aria-label="Court pages">
             <button type="button" className="nav-link" onClick={onOpenHistory}>
               <TombstoneArt className="nav-link-icon" aria-hidden="true" />
@@ -49,7 +45,7 @@ export function Landing({ onChoosePreset, onStartCustom, onStartSample, onOpenHi
           </p>
           <div className="hero-stats">
             <div className="hero-stat">
-              <span className="hero-stat-value">4</span>
+              <span className="hero-stat-value">{PRESETS.length}</span>
               <span className="hero-stat-label">ready courts</span>
             </div>
             <div className="hero-stat">
@@ -70,16 +66,14 @@ export function Landing({ onChoosePreset, onStartCustom, onStartSample, onOpenHi
           <p className="section-sub">Four ready-made courts. One tap and the prisoners line up.</p>
           <div className="preset-grid">
             {PRESETS.map((preset) => {
-              const PresetIcon = PRESET_ICONS[preset.id] || CoffinArt;
+              const PresetIcon = PRESET_ICONS[preset.id];
               return (
                 <button key={preset.id} type="button" className="preset-card" onClick={() => onChoosePreset(preset)}>
                   <PresetIcon className="preset-card-icon" aria-hidden="true" />
                   <span className="preset-card-title">{preset.name}</span>
                   <span className="preset-card-description">{preset.description}</span>
                   <span className="preset-card-count">
-                    {preset.options.length}
-                    {' '}
-                    accused
+                    {preset.options.length} accused
                   </span>
                 </button>
               );

@@ -1,10 +1,10 @@
 import { useLayoutEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { Icon } from '@iconify/react';
+import { BatArt, Sparkle, MoonWaning, CemeteryArt, ManorArt, JackOLanternArt, SpiderArt } from './Icons.jsx';
+import { reducedMotion } from '../usePageEnter.js';
 
 gsap.registerPlugin(ScrollTrigger);
-import { BatArt, Sparkle, MoonWaning, CemeteryArt, ManorArt, JackOLanternArt, SpiderArt } from './Icons.jsx';
 
 const BAT_CLASSES = ['bat-a', 'bat-b', 'bat-c', 'bat-d', 'bat-e', 'bat-f'];
 const PUMPKIN_CLASSES = ['pumpkin-a', 'pumpkin-b', 'pumpkin-c'];
@@ -12,7 +12,7 @@ const EMBER_COUNT = 12;
 const PARALLAX_LAYERS = [
   ['.backdrop-stars', 20],
   ['.backdrop-moon', 50],
-  ['.backdrop-pumpkins', 40],
+  ['.backdrop-sparkles', 40],
   ['.backdrop-far', 30],
   ['.backdrop-hills', 55],
   ['.backdrop-skyline', 100],
@@ -23,24 +23,6 @@ const FAR_TREE_PATH = Array.from({ length: 36 }, (_, index) => {
   const height = 70 + ((index * 37) % 5) * 18;
   return `M${x} 200L${x + 14} ${200 - height}L${x + 28} 200z`;
 }).join('');
-
-export function GuillotineMark({ className }) {
-  return <img className={className} src="/logo-mark.svg" alt="" aria-hidden="true" decoding="sync" />;
-}
-
-export function BrandChip() {
-  return (
-    <div className="brand">
-      <GuillotineMark className="brand-mark" />
-      GuillotineVote
-    </div>
-  );
-}
-
-const reduced = () =>
-  typeof window !== 'undefined' &&
-  typeof window.matchMedia === 'function' &&
-  window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 function Fog() {
   return (
@@ -87,7 +69,7 @@ export function HalloweenBackdrop({ variant = 'landing' }) {
   const rootRef = useRef(null);
 
   useLayoutEffect(() => {
-    if (reduced() || !rootRef.current) {
+    if (reducedMotion() || !rootRef.current) {
       return;
     }
     const root = rootRef.current;
@@ -192,7 +174,7 @@ export function HalloweenBackdrop({ variant = 'landing' }) {
       <Fog />
       <Foreground />
       {variant === 'landing' && (
-        <div className="backdrop-pumpkins">
+        <div className="backdrop-sparkles">
           <Sparkle className="backdrop-sparkle sparkle-a" />
           <Sparkle className="backdrop-sparkle sparkle-b" />
         </div>

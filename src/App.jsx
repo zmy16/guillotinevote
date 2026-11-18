@@ -8,7 +8,8 @@ import { Setup } from './components/Setup.jsx';
 import { HistoryPage, FaqPage } from './components/InfoPages.jsx';
 import { Stage } from './components/Stage.jsx';
 import { Graveyard, WinnerDecree, ResultView, InvalidShare } from './components/Result.jsx';
-import { HalloweenBackdrop, GuillotineMark } from './components/HalloweenBackdrop.jsx';
+import { HalloweenBackdrop } from './components/HalloweenBackdrop.jsx';
+import { BrandChip } from './components/Brand.jsx';
 import { ConfirmDialog } from './components/ConfirmDialog.jsx';
 import { usePageEnter, usePageExit } from './usePageEnter.js';
 
@@ -299,10 +300,7 @@ export default function App() {
   const leaveDialogBody = hasTrialProgress && !isSample ? LEAVE_BODY_SAVED : LEAVE_BODY_NOTHING_SAVED;
   const brandBar = (
     <div className="brand-bar">
-      <div className="brand">
-        <GuillotineMark className="brand-mark" />
-        GuillotineVote
-      </div>
+      <BrandChip />
       {isTrialInProgress && (
         <button type="button" className="button button-ghost exit-button" aria-label="Leave the court" onClick={handleLeaveRequest}>
           <ArrowLeft size={16} aria-hidden="true" />

@@ -9,19 +9,9 @@ import {
   SkullArt,
   GuillotineArt,
   CandleArt,
-  CoinArt,
-  MapArt,
-  BoredArt,
-  SleepArt,
-  BatArt
+  BatArt,
+  VERDICT_ICONS
 } from './Icons.jsx';
-
-const VERDICT_ICONS = {
-  too_expensive: CoinArt,
-  too_far: MapArt,
-  boring: BoredArt,
-  not_today: SleepArt
-};
 
 function VerdictTag({ verdict }) {
   if (!verdict) {

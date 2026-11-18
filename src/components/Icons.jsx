@@ -9,7 +9,6 @@ export function ExecutionerHood(props) {
   return <Icon icon="game-icons:executioner-hood" {...props} />;
 }
 
-/* Voting + judgment glyphs — the app's actual subject, not generic Halloween props */
 export function BallotGlyph(props) {
   return <Icon icon="mdi:ballot" {...props} />;
 }
@@ -195,10 +194,6 @@ export function ManorArt(props) {
     </svg>
   );
 }
-export function SkylineArt(props) {
-  return <Icon icon="game-icons:spooky-house" {...props} />;
-}
-
 export function TombstoneArt(props) {
   return <Icon icon="mdi:tombstone" {...props} />;
 }
@@ -237,22 +232,6 @@ export function SkullArt(props) {
 
 export function CandleArt(props) {
   return <Icon icon="game-icons:candle-flame" {...props} />;
-}
-
-export function CauldronArt(props) {
-  return <Icon icon="game-icons:cauldron" {...props} />;
-}
-
-export function RavenArt(props) {
-  return <Icon icon="game-icons:raven" {...props} />;
-}
-
-export function KnifeArt(props) {
-  return <Icon icon="game-icons:knife-thrust" {...props} />;
-}
-
-export function TombstoneGlyph(props) {
-  return <Icon icon="game-icons:tombstone" {...props} />;
 }
 
 export function MoonWaning(props) {
@@ -324,3 +303,10 @@ export function SpiderArt(props) {
     </svg>
   );
 }
+
+export const VERDICT_ICONS = {
+  too_expensive: CoinArt,
+  too_far: MapArt,
+  boring: BoredArt,
+  not_today: SleepArt
+};

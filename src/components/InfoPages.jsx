@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { ArrowLeft, Crown, Hourglass, Play, Skull, Trash2, Users } from 'lucide-react';
-import { BrandChip } from './HalloweenBackdrop.jsx';
+import { BrandChip } from './Brand.jsx';
 import { ConfirmDialog } from './ConfirmDialog.jsx';
 import { readHistory, deleteSession, clearHistory } from '../history.js';
 import { restoreGame } from '../engine.js';

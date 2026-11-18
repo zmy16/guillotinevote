@@ -386,7 +386,7 @@ html {
 }
 
 
-.backdrop-pumpkins {
+.backdrop-sparkles {
   position: absolute;
   inset: 0;
   pointer-events: none;
@@ -408,7 +408,7 @@ html {
 
 @media (prefers-reduced-motion: reduce) {
   .backdrop-star,
-  .backdrop-pumpkin,
+  .backdrop-sparkles,
   .backdrop-sparkle {
     animation: none !important;
   }
@@ -469,18 +469,6 @@ html {
   display: block;
   width: 100%;
   height: 100%;
-}
-
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  white-space: nowrap;
-  border: 0;
 }
 
 .page-top .brand {

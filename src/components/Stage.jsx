@@ -3,33 +3,20 @@ import gsap from 'gsap';
 import { Volume2, VolumeX, HelpCircle } from 'lucide-react';
 import { PRESET_VERDICTS, VERDICT_LABELS, MAX_VERDICT_LENGTH } from '../engine.js';
 import { PrisonerGlyph, prisonerHueFor, GuillotineRig, JAW_OPEN_OFFSET } from './Prisoner.jsx';
+import { reducedMotion } from '../usePageEnter.js';
 import {
   CrownArt,
   SwordArt,
   ShieldArt,
-  CoinArt,
-  MapArt,
-  BoredArt,
-  SleepArt,
   ExecutionerHood,
-  BatArt
+  BatArt,
+  VERDICT_ICONS
 } from './Icons.jsx';
-
-const VERDICT_ICONS = {
-  too_expensive: CoinArt,
-  too_far: MapArt,
-  boring: BoredArt,
-  not_today: SleepArt
-};
 
 const BLADE_LANDED_Y = 71;
 const BLADE_BOUNCE_Y = BLADE_LANDED_Y - 6;
 const COMMIT_DELAY_AFTER_IMPACT = 0.5;
 const SINGLE_COLUMN_QUERY = '(max-width: 959px)';
-
-function prefersReducedMotion() {
-  return typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-}
 
 function buildExecutionTimeline(root, blade, { onBladeSound, onCommit }) {
   const frame = root.querySelector('.blade-frame');
@@ -184,7 +171,7 @@ export function Stage({
   const [isExecuting, setIsExecuting] = useState(false);
 
   useEffect(() => {
-    if (!gridRef.current || prefersReducedMotion()) {
+    if (!gridRef.current || reducedMotion()) {
       return;
     }
     gsap.fromTo(
@@ -196,7 +183,7 @@ export function Stage({
 
   useEffect(() => {
     if (window.matchMedia(SINGLE_COLUMN_QUERY).matches) {
-      window.scrollTo({ top: 0, behavior: prefersReducedMotion() ? 'auto' : 'smooth' });
+      window.scrollTo({ top: 0, behavior: reducedMotion() ? 'auto' : 'smooth' });
     }
   }, [state.currentPlayerIndex]);
 
@@ -208,7 +195,7 @@ export function Stage({
     }
     previousGraveyardLength.current = state.graveyard.length;
     const last = state.graveyard[state.graveyard.length - 1];
-    if (!last || last.kind !== 'pardon' || prefersReducedMotion()) {
+    if (!last || last.kind !== 'pardon' || reducedMotion()) {
       return undefined;
     }
     const timeline = gsap.timeline();
@@ -258,7 +245,7 @@ export function Stage({
     if (!canExecute || isExecuting) {
       return;
     }
-    if (prefersReducedMotion()) {
+    if (reducedMotion()) {
       onBladeSound('blade');
       onExecute();
       return;

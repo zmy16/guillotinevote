@@ -8,8 +8,6 @@ export const reducedMotion = () =>
 
 const pageShell = (root) => root.closest('.app-shell') || root;
 
-let hasNavigated = false;
-
 const isRendered = (element) => {
   const style = window.getComputedStyle(element);
   return style.display !== 'none' && style.visibility !== 'hidden';
@@ -24,8 +22,6 @@ export function usePageEnter(key) {
     if (!root || reducedMotion()) {
       return;
     }
-    // useLayoutEffect on mount: browser has not painted yet, so any "from" state
-    // we set here becomes the first frame — no flash of unanimated content.
     const isCold = firstRun.current;
     firstRun.current = false;
 
@@ -36,8 +32,6 @@ export function usePageEnter(key) {
     const rest = [...root.querySelectorAll('.page > *')].filter((c) => c !== first && isRendered(c));
 
     const scope = gsap.context(() => {
-      // Set the initial (hidden) state synchronously so the very first frame
-      // the browser paints is already the animation start, not the finished page.
       if (isCold) {
         if (brandBar) gsap.set(brandBar, { opacity: 0, y: -20 });
         if (first) {

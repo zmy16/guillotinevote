@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
-import { BrandChip } from './HalloweenBackdrop.jsx';
+import { BrandChip } from './Brand.jsx';
 import { DEFAULT_PLAYERS } from '../presets.js';
 
 export function Setup({ initialTitle = '', initialOptions = [], onBack, onStarted }) {
@@ -159,7 +159,7 @@ export function Setup({ initialTitle = '', initialOptions = [], onBack, onStarte
         <fieldset className="fieldset">
           <legend className="fieldset-legend">Game title</legend>
           <div className="field">
-            <label className="sr-only" htmlFor="game-title">
+            <label className="visually-hidden" htmlFor="game-title">
               Game title
             </label>
             <input

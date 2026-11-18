@@ -1,0 +1,298 @@
+.graveyard {
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+}
+
+.graveyard-heading {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.graveyard-heading-icon {
+  width: 26px;
+  height: 26px;
+  color: var(--purple-300);
+}
+
+.graveyard {
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+}
+
+.headstone {
+  background:
+    radial-gradient(ellipse 100% 60% at 50% 0%, rgba(139, 92, 246, 0.16), transparent 66%),
+    linear-gradient(170deg, rgba(36, 27, 62, 0.96), rgba(18, 13, 33, 0.94));
+  border: 1px solid rgba(196, 181, 253, 0.14);
+  border-radius: 60px 60px var(--radius-sm) var(--radius-sm);
+  padding: var(--space-4) var(--space-3) var(--space-3);
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+  transition: transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1), border-color 220ms ease-out;
+}
+
+.headstone:hover {
+  transform: translateY(-3px);
+  border-color: rgba(196, 181, 253, 0.32);
+}
+
+.headstone::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(90deg, transparent, rgba(220, 38, 38, 0.55), transparent);
+}
+
+.headstone-art {
+  width: 40px;
+  height: 40px;
+  color: var(--purple-300);
+  margin: 0 auto var(--space-1);
+  opacity: 0.9;
+  filter: drop-shadow(0 3px 10px rgba(124, 58, 237, 0.5));
+}
+
+.headstone-verdict {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: var(--space-2);
+  padding: 5px 12px;
+  border-radius: var(--radius-pill);
+  background: rgba(220, 38, 38, 0.12);
+  border: 1px solid rgba(220, 38, 38, 0.35);
+  color: #fca5a5;
+  font-size: 12px;
+}
+
+.headstone-verdict-icon {
+  width: 13px;
+  height: 13px;
+}
+
+.headstone-name {
+  font-family: var(--font-display);
+  font-size: 19px;
+  line-height: 1.25;
+  margin-bottom: 4px;
+  overflow-wrap: anywhere;
+}
+
+.headstone-meta {
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  margin-bottom: var(--space-3);
+}
+
+.pardon-entry {
+  background: linear-gradient(165deg, rgba(245, 158, 11, 0.14), rgba(245, 158, 11, 0.06));
+  border: 1px solid rgba(245, 158, 11, 0.45);
+  border-radius: var(--radius-md);
+  padding: var(--space-4) var(--space-3);
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+}
+
+.pardon-entry-icon {
+  color: var(--gold-500);
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  margin-top: 2px;
+  filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.5));
+}
+
+.pardon-entry-name {
+  font-family: var(--font-display);
+  font-size: 18px;
+  color: var(--gold-300);
+  word-break: break-word;
+}
+
+.pardon-entry-meta {
+  margin-top: var(--space-2);
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.decree {
+  position: relative;
+  overflow: hidden;
+  padding: var(--space-6) var(--space-5);
+  background:
+    radial-gradient(circle at 50% 0%, rgba(245, 158, 11, 0.18), transparent 60%),
+    var(--bg-court);
+  border: 1px solid var(--gold-600);
+  border-radius: var(--radius-lg);
+  text-align: center;
+}
+
+.decree-crown {
+  color: var(--gold-500);
+  width: 64px;
+  height: 64px;
+  margin: 0 auto var(--space-3);
+  filter: drop-shadow(0 0 30px rgba(245, 158, 11, 0.7));
+  animation: crownFloat 3.2s ease-in-out infinite;
+}
+
+@keyframes crownFloat {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-6px) rotate(-2deg); }
+}
+
+.decree-rays {
+  position: absolute;
+  inset: -20% -20% auto -20%;
+  height: 200%;
+  background: repeating-conic-gradient(from 0deg at 50% 0%, rgba(245, 158, 11, 0.06) 0deg 4deg, transparent 4deg 12deg);
+  animation: raysSpin 30s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes raysSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.decree-label {
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.decree-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  margin: 0 4px;
+  border-radius: var(--radius-pill);
+  background: rgba(139, 92, 246, 0.12);
+  border: 1px solid rgba(139, 92, 246, 0.35);
+  color: var(--purple-300);
+  font-size: 12px;
+}
+
+.decree-chip-icon {
+  width: 13px;
+  height: 13px;
+}
+
+.decree-players {
+  display: block;
+  margin-top: var(--space-2);
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.share-url {
+  margin-top: var(--space-3);
+  font-size: 12px;
+  color: var(--text-muted);
+  word-break: break-all;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.share-url-icon {
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+}
+
+.invalid-mark {
+  width: 64px;
+  height: 64px;
+  color: var(--blood-500);
+  margin: 0 auto var(--space-3);
+  display: block;
+  filter: drop-shadow(0 0 24px rgba(220, 38, 38, 0.5));
+}
+
+.result-players-icon {
+  width: 16px;
+  height: 16px;
+  color: var(--gold-500);
+  margin-right: 6px;
+  vertical-align: -3px;
+}
+
+.decree-winner {
+  margin-top: var(--space-2);
+  font-family: var(--font-display);
+  font-size: clamp(30px, 6vw, 48px);
+  color: var(--text-primary);
+  text-decoration: underline;
+  text-decoration-color: var(--survivor);
+  text-decoration-thickness: 4px;
+  text-underline-offset: 8px;
+  word-break: break-word;
+}
+
+.decree-meta {
+  margin-top: var(--space-4);
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.decree-actions {
+  margin-top: var(--space-5);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  justify-content: center;
+}
+
+.share-warning {
+  margin-top: var(--space-4);
+  font-size: 13px;
+  color: var(--text-muted);
+  max-width: 46ch;
+  margin-left: auto;
+  margin-right: auto;
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+  text-align: left;
+}
+
+.share-warning svg {
+  flex-shrink: 0;
+  margin-top: 3px;
+  color: var(--gold-500);
+}
+
+.result-frame {
+  padding: var(--space-5) 0;
+}
+
+.result-title {
+  font-size: 22px;
+  margin-bottom: var(--space-2);
+}
+
+.result-players {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.share-actions {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  align-items: center;
+}

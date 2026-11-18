@@ -1,0 +1,26 @@
+import { chromium } from 'playwright';
+const b = await chromium.launch();
+const p = await b.newPage({ viewport: { width: 1280, height: 900 } });
+const errs = [];
+p.on('console', (m) => m.type() === 'error' && errs.push(m.text()));
+p.on('pageerror', (e) => errs.push(e.message));
+await p.goto('http://localhost:5173');
+await p.click('text=Dinner Dilemma');
+await p.waitForSelector('.page-top');
+await p.screenshot({ path: 'screens/test/setup-top.png', clip: { x: 0, y: 0, width: 1280, height: 420 } });
+// confirm dialog on remove
+let dialogMsg = null;
+p.once('dialog', async (d) => { dialogMsg = d.message(); await d.dismiss(); });
+await p.click('.field-clear >> nth=0');
+await p.waitForTimeout(400);
+const countAfterDismiss = await p.locator('#player-0').count();
+p.once('dialog', async (d) => { await d.accept(); });
+await p.click('.field-clear >> nth=0');
+await p.waitForTimeout(400);
+const opts = await p.locator('.field-clear').count();
+console.log(JSON.stringify({ dialogMsg, countAfterDismiss, clearButtons: opts, errs }));
+await p.locator('.page').screenshot({ path: 'screens/test/setup-page.png' });
+await p.setViewportSize({ width: 390, height: 900 });
+await p.waitForTimeout(300);
+await p.screenshot({ path: 'screens/test/setup-mobile-top.png', clip: { x: 0, y: 0, width: 390, height: 300 } });
+await b.close();

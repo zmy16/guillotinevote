@@ -1,0 +1,18 @@
+import { chromium } from 'playwright';
+const b = await chromium.launch();
+const p = await b.newPage({ viewport: { width: 1280, height: 900 } });
+await p.goto('http://localhost:5173');
+await p.waitForLoadState('networkidle');
+await p.click('text=Dinner Dilemma');
+await p.waitForSelector('#player-0');
+console.log('setup opened OK');
+await p.click('button:has-text("Open the court")');
+await p.waitForTimeout(600);
+console.log('URL:', p.url());
+console.log('error-summary count:', await p.locator('.error-summary').count());
+console.log('prisoner-card count:', await p.locator('.prisoner-card').count());
+console.log('has #player-0:', await p.locator('#player-0').count());
+console.log('player values:', await p.inputValue('#player-0'), '|', await p.inputValue('#player-1'));
+console.log('option values:', await p.inputValue('#option-0'), '|', await p.inputValue('#option-1'));
+await p.screenshot({ path: 'screens/test/debug-validation.png', fullPage: true });
+await b.close();

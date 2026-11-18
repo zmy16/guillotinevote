@@ -1,0 +1,368 @@
+import { useEffect, useRef } from 'react';
+import gsap from 'gsap';
+import { Volume2, VolumeX, HelpCircle } from 'lucide-react';
+import { PRESET_VERDICTS, VERDICT_LABELS, MAX_VERDICT_LENGTH } from '../engine.js';
+import { PrisonerGlyph, prisonerHueFor, GuillotineRig } from './Prisoner.jsx';
+import {
+  CrownArt,
+  SwordArt,
+  ShieldArt,
+  CoinArt,
+  MapArt,
+  BoredArt,
+  SleepArt,
+  ExecutionerHood,
+  BatArt
+} from './Icons.jsx';
+
+const VERDICT_ICONS = {
+  too_expensive: CoinArt,
+  too_far: MapArt,
+  boring: BoredArt,
+  not_today: SleepArt
+};
+
+function prefersReducedMotion() {
+  return typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
+export function Stage({
+  state,
+  selectedOptionId,
+  verdict,
+  otherVerdict,
+  onSelectOption,
+  onSelectVerdict,
+  onChangeOtherVerdict,
+  onExecute,
+  onPardon,
+  muted,
+  onToggleMute,
+  announcement
+}) {
+  const rootRef = useRef(null);
+  const bladeRef = useRef(null);
+  const gridRef = useRef(null);
+  const previousGraveyardLength = useRef(state.graveyard.length);
+
+  useEffect(() => {
+    if (!gridRef.current || prefersReducedMotion()) {
+      return;
+    }
+    gsap.fromTo(
+      gridRef.current.querySelectorAll('.prisoner-card'),
+      { y: 16, opacity: 0 },
+      { y: 0, opacity: 1, duration: 0.42, ease: 'power2.out', stagger: 0.045, overwrite: 'auto' }
+    );
+  }, [state.currentPlayerIndex]);
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'auto' });
+  }, [state.currentPlayerIndex]);
+
+  useEffect(() => {
+    if (state.graveyard.length === previousGraveyardLength.current) {
+      return;
+    }
+    previousGraveyardLength.current = state.graveyard.length;
+    const last = state.graveyard[state.graveyard.length - 1];
+    if (!bladeRef.current || prefersReducedMotion()) {
+      return;
+    }
+    const timeline = gsap.timeline();
+    if (last && last.kind === 'pardon') {
+      timeline.fromTo(
+        '.pardon-card',
+        { scale: 1 },
+        { scale: 1.08, duration: 0.18, ease: 'power2.out', yoyo: true, repeat: 1 }
+      );
+      timeline.fromTo(
+        '.blade-frame',
+        { boxShadow: '0 0 0 0 rgba(245,158,11,0)' },
+        {
+          boxShadow: '0 0 0 3px rgba(245,158,11,0.55), 0 0 70px rgba(245,158,11,0.35)',
+          duration: 0.26,
+          yoyo: true,
+          repeat: 1,
+          clearProps: 'boxShadow'
+        },
+        0
+      );
+    } else {
+      const rig = rootRef.current;
+      const blade = bladeRef.current;
+      const frame = rig?.querySelector('.blade-frame');
+      const guard = rig?.querySelector('.guillotine-rig');
+      const flash = rig?.querySelector('.rig-flash');
+      const sparks = rig?.querySelector('.rig-sparks');
+      const sparkLines = rig?.querySelectorAll('.rig-spark');
+      const rope = rig?.querySelector('.rig-rope');
+      const speed = rig?.querySelector('.rig-speed');
+      const glow = rig?.querySelector('.rig-edge-glow');
+      const shadow = rig?.querySelector('.rig-shadow');
+      const dust = rig?.querySelector('.rig-dust');
+      const puffs = rig?.querySelectorAll('.rig-dust-puff');
+      const debris = rig?.querySelector('.rig-debris');
+      const bits = rig?.querySelectorAll('.rig-debris-bit');
+      const dropGroup = rig?.querySelector('.rig-drops');
+      const drops = rig?.querySelectorAll('.rig-drop');
+
+      const timeline = gsap.timeline({ defaults: { overwrite: 'auto' } });
+      timeline.set(rope, { opacity: 1, attr: { y2: 27 } }, 0);
+      timeline.to(rope, { opacity: 0, attr: { y2: 19 }, duration: 0.07, ease: 'power2.in' }, 0);
+      timeline.to(blade, { y: -13, duration: 0.44, ease: 'power2.out' }, 0);
+      timeline.to(shadow, { opacity: 0.3, attr: { rx: 20 }, duration: 0.44, ease: 'power2.out' }, 0);
+      timeline.to(blade, { y: -9, duration: 0.46, ease: 'sine.inOut' }, 0.44);
+      timeline.addLabel('release', 0.9);
+      timeline.to(blade, { y: 63, duration: 0.3, ease: 'power3.in' }, 'release');
+      timeline.to(blade, { filter: 'blur(2.6px)', duration: 0.22, ease: 'power2.in' }, 'release+=0.06');
+      timeline.to(speed, { opacity: 1, duration: 0.09 }, 'release+=0.1');
+      timeline.to(glow, { opacity: 0.85, duration: 0.1 }, 'release+=0.1');
+      timeline.to(shadow, { opacity: 0.85, attr: { rx: 32 }, duration: 0.3, ease: 'power2.in' }, 'release');
+      timeline.addLabel('impact', 1.22);
+      timeline.to(blade, { y: 57, duration: 0.08, ease: 'power2.out' }, 'impact');
+      timeline.to(blade, { y: 63, duration: 0.15, ease: 'sine.out' }, 'impact+=0.08');
+      timeline.fromTo(
+        blade,
+        { rotate: 0, svgOrigin: '120 84' },
+        { rotate: 1.1, duration: 0.07, ease: 'power2.in', yoyo: true, repeat: 5 },
+        'impact+=0.06'
+      );
+      timeline.to(blade, { filter: 'blur(0px)', duration: 0.1 }, 'impact');
+      timeline.to(speed, { opacity: 0, duration: 0.14 }, 'impact');
+      timeline.to(glow, { opacity: 0, duration: 0.28 }, 'impact');
+      timeline.to(shadow, { opacity: 0, duration: 0.22 }, 'impact');
+      timeline.fromTo(
+        flash,
+        { opacity: 0, scale: 0.5, svgOrigin: '120 94' },
+        { opacity: 0.6, scale: 1.15, duration: 0.18, ease: 'power2.out' },
+        'impact'
+      );
+      timeline.to(flash, { opacity: 0, duration: 0.34, ease: 'power1.in' }, 'impact+=0.2');
+      timeline.fromTo(sparks, { opacity: 1 }, { opacity: 0, duration: 0.24, ease: 'power2.out' }, 'impact');
+      timeline.fromTo(
+        sparkLines,
+        { scaleX: 0.2, scaleY: 0.2, svgOrigin: '120 145' },
+        { scaleX: 1, scaleY: 1, duration: 0.12, ease: 'power3.out', stagger: 0.008 },
+        'impact'
+      );
+      timeline.fromTo(dust, { opacity: 0.75 }, { opacity: 0, duration: 0.8, ease: 'power1.out' }, 'impact');
+      timeline.fromTo(
+        puffs,
+        { scale: 0.4, opacity: 0.85, svgOrigin: '120 145' },
+        { scale: 1.5, duration: 'random(0.45, 0.7)', ease: 'power2.out', stagger: 0.06 },
+        'impact'
+      );
+      timeline.fromTo(debris, { opacity: 1 }, { opacity: 0, duration: 0.7, ease: 'power1.in' }, 'impact+=0.28');
+      timeline.fromTo(
+        bits,
+        { y: 0, x: 0, opacity: 1, rotate: 0 },
+        { y: 'random(-26, -12)', x: 'random(-20, 20)', rotate: 'random(-160, 160)', duration: 'random(0.24, 0.34)', ease: 'power2.out', stagger: 0.012 },
+        'impact'
+      );
+      timeline.to(
+        bits,
+        { y: 'random(16, 26)', opacity: 0, duration: 'random(0.3, 0.44)', ease: 'power2.in', stagger: 0.012 },
+        'impact+=0.26'
+      );
+      timeline.set(dropGroup, { opacity: 1 }, 'impact');
+      timeline.fromTo(
+        drops,
+        { y: 0, x: 0, scale: 1, opacity: 1 },
+        { y: 'random(-30, -16)', x: 'random(-16, 16)', scale: 0.85, duration: 'random(0.2, 0.28)', ease: 'power2.out', stagger: 0.014 },
+        'impact'
+      );
+      timeline.to(
+        drops,
+        { y: 'random(16, 30)', scale: 0.4, opacity: 0, duration: 'random(0.34, 0.5)', ease: 'power2.in', stagger: 0.014 },
+        'impact+=0.24'
+      );
+      timeline.set(dropGroup, { opacity: 0 }, 'impact+=0.78');
+      timeline.fromTo(
+        guard,
+        { scaleY: 1 },
+        { scaleY: 0.978, scaleX: 1.008, transformOrigin: '50% 100%', duration: 0.08, ease: 'power2.out', yoyo: true, repeat: 1 },
+        'impact'
+      );
+      timeline.to(
+        frame,
+        {
+          keyframes: {
+            x: [0, 11, -8, 6, -4, 2.5, -1.2, 0],
+            y: [0, 3, -2, 1.5, -1, 0.5, 0, 0],
+            easeEach: 'power2.out'
+          },
+          duration: 0.44
+        },
+        'impact'
+      );
+      timeline.to(frame, { boxShadow: '0 0 110px rgba(220,38,38,0.55)', duration: 0.1, yoyo: true, repeat: 1, clearProps: 'boxShadow' }, 'impact');
+      timeline.to(blade, { y: 0, duration: 0.86, ease: 'power2.inOut', delay: 0.22 }, 'impact+=0.62');
+      return () => timeline.kill();
+    }
+    return undefined;
+  }, [state.graveyard.length]);
+
+  const aliveOptions = state.options.filter((option) => option.status === 'alive');
+  const totalOptions = state.options.length;
+  const eliminatedCount = state.graveyard.filter((record) => record.kind === 'execution').length;
+  const progressPercent = Math.round((eliminatedCount / Math.max(1, totalOptions - 1)) * 100);
+  const currentPlayer = state.players[state.currentPlayerIndex];
+  const otherVerdictInvalid = verdict === 'other' && otherVerdict.trim().length === 0;
+  const canExecute = Boolean(selectedOptionId) && Boolean(verdict) && !otherVerdictInvalid;
+
+  const helperMessage = !selectedOptionId
+    ? 'Choose one living option to accuse.'
+    : !verdict
+      ? 'Now choose a verdict.'
+      : otherVerdictInvalid
+        ? 'Write your verdict to continue.'
+        : 'Ready. The blade is waiting.';
+
+  return (
+    <div className="page" ref={rootRef}>
+      <p className="visually-hidden" role="status" aria-live="polite">
+        {announcement}
+      </p>
+      <div className="stage">
+        <div className="blade-frame">
+          <div className="turn-indicator">
+        <div className="turn-identity">
+          <span className="turn-avatar" aria-hidden="true">
+            {currentPlayer.trim().charAt(0).toUpperCase()}
+          </span>
+          <div>
+            <div className="turn-round">
+              Round {state.round} · {aliveOptions.length} of {totalOptions} still standing
+            </div>
+            <div className="turn-player">{currentPlayer}&rsquo;s turn</div>
+          </div>
+        </div>
+        <div className="turn-controls">
+          <div className="turn-progress" aria-hidden="true">
+            <span className="turn-progress-fill" style={{ width: `${progressPercent}%` }} />
+          </div>
+          <button type="button" className="sound-toggle" onClick={onToggleMute} aria-pressed={!muted}>
+            {muted ? <VolumeX size={16} aria-hidden="true" /> : <Volume2 size={16} aria-hidden="true" />}
+            <span className="sound-toggle-label">{muted ? 'Sound off' : 'Sound on'}</span>
+          </button>
+        </div>
+          </div>
+
+          <div className="rig-wrap">
+            <GuillotineRig bladeRef={bladeRef} />
+            <p className="rig-caption">
+              <ExecutionerHood className="rig-caption-icon" aria-hidden="true" />
+              The Chopping Block
+            </p>
+          </div>
+
+          <div className="prisoner-grid" role="group" aria-label="Living options" ref={gridRef}>
+            {aliveOptions.map((option) => {
+              const isSelected = selectedOptionId === option.id;
+              return (
+                <button
+                  key={option.id}
+                  type="button"
+                  className="prisoner-card"
+                  aria-pressed={isSelected}
+                  onClick={() => onSelectOption(option.id)}
+                  style={{ '--prisoner-hue': prisonerHueFor(option.label) }}
+                >
+                  <span className="prisoner-portrait">
+                    <PrisonerGlyph label={option.label} className="prisoner-glyph" />
+                  </span>
+                  {isSelected && <CrownArt className="prisoner-crown" aria-hidden="true" />}
+                  <span className="prisoner-label">{option.label}</span>
+                  <span className="prisoner-state">{isSelected ? 'Sentenced' : 'Awaiting judgment'}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <section className="verdict-section" aria-labelledby="verdict-heading">
+          <div className="verdict-head">
+            <h2 className="verdict-heading" id="verdict-heading">
+              The verdict
+            </h2>
+            <span className="verdict-hint">Why does it deserve the blade?</span>
+          </div>
+          <div className="verdict-row" role="group" aria-label="Verdict">
+            {PRESET_VERDICTS.map((kind) => {
+              const VerdictIcon = VERDICT_ICONS[kind];
+              return (
+                <button
+                  key={kind}
+                  type="button"
+                  className="verdict-chip"
+                  aria-pressed={verdict === kind}
+                  onClick={() => onSelectVerdict(kind)}
+                  disabled={!selectedOptionId}
+                >
+                  <VerdictIcon className="verdict-chip-icon" aria-hidden="true" />
+                  {VERDICT_LABELS[kind]}
+                </button>
+              );
+            })}
+            <button
+              type="button"
+              className="verdict-chip"
+              aria-pressed={verdict === 'other'}
+              onClick={() => onSelectVerdict('other')}
+              disabled={!selectedOptionId}
+            >
+              <BatArt className="verdict-chip-icon" aria-hidden="true" />
+              Other
+            </button>
+          </div>
+
+          {verdict === 'other' && (
+            <div className="verdict-other-field">
+              <label className="field-label" htmlFor="other-verdict">
+                Your verdict
+              </label>
+              <input
+                id="other-verdict"
+                className="input"
+                value={otherVerdict}
+                onChange={(event) => onChangeOtherVerdict(event.target.value.slice(0, MAX_VERDICT_LENGTH))}
+                maxLength={MAX_VERDICT_LENGTH}
+                placeholder="Too loud"
+              />
+              <span className="field-hint">
+                {otherVerdict.length}/{MAX_VERDICT_LENGTH} characters
+              </span>
+            </div>
+          )}
+        </section>
+
+        <div className="action-row">
+          <button type="button" className="button button-primary drop-blade" onClick={onExecute} disabled={!canExecute}>
+            <SwordArt className="drop-blade-icon" aria-hidden="true" />
+            Drop the Blade
+          </button>
+
+          <button
+            type="button"
+            className="pardon-card"
+            data-spent={state.pardonAvailable ? 'false' : 'true'}
+            onClick={onPardon}
+            disabled={!state.pardonAvailable || !selectedOptionId}
+          >
+            <ShieldArt className="pardon-card-icon" aria-hidden="true" />
+            <span className="pardon-card-text">
+              <span className="pardon-card-title">Royal Pardon</span>
+              <span className="pardon-card-sub">{state.pardonAvailable ? 'One use · saves an option' : 'Already spent'}</span>
+            </span>
+          </button>
+        </div>
+
+        <p className="helper-text">
+          <HelpCircle className="helper-text-icon" aria-hidden="true" />
+          {helperMessage}
+        </p>
+      </div>
+    </div>
+  );
+}

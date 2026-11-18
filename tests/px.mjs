@@ -1,0 +1,17 @@
+import { chromium } from 'playwright';
+const b = await chromium.launch();
+const p = await b.newPage({ viewport: { width: 1200, height: 820 } });
+const errs = [];
+p.on('pageerror', (e) => errs.push('PAGEERR ' + e.message));
+p.on('console', (m) => m.type() === 'error' && errs.push('CONSOLE ' + m.text()));
+await p.goto('http://localhost:5173');
+await p.waitForTimeout(1200);
+await p.screenshot({ path: 'screens/test/px-0.png' });
+await p.evaluate(() => window.scrollTo({ top: 900 }));
+await p.waitForTimeout(900);
+await p.screenshot({ path: 'screens/test/px-900.png' });
+await p.evaluate(() => window.scrollTo({ top: 99999 }));
+await p.waitForTimeout(900);
+await p.screenshot({ path: 'screens/test/px-end.png' });
+console.log(JSON.stringify(errs));
+await b.close();

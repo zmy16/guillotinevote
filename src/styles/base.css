@@ -1,0 +1,341 @@
+html {
+  scrollbar-gutter: stable;
+  scrollbar-color: #7c3aed #0d0817;
+  scrollbar-width: thin;
+}
+
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: linear-gradient(180deg, #0d0817, #150f27);
+  border-left: 1px solid rgba(196, 181, 253, 0.08);
+}
+
+::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: var(--radius-pill);
+  background-image: linear-gradient(180deg, #8b5cf6, #6d28d9 55%, #f59e0b);
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-image: linear-gradient(180deg, #a78bfa, #7c3aed 55%, #fbbf24);
+}
+
+::-webkit-scrollbar-corner {
+  background: #0d0817;
+}
+
+.app-shell {
+  position: relative;
+  min-height: 100vh;
+  overflow-x: clip;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(124, 58, 237, 0.35), transparent 60%),
+    radial-gradient(ellipse 60% 40% at 85% 20%, rgba(245, 158, 11, 0.1), transparent 55%),
+    radial-gradient(ellipse 70% 60% at 10% 90%, rgba(109, 40, 217, 0.18), transparent 60%),
+    linear-gradient(180deg, #120a24 0%, #0d0817 40%, #090611 100%);
+}
+
+.app-shell::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.5;
+  background-image: radial-gradient(rgba(196, 181, 253, 0.05) 1px, transparent 1px);
+  background-size: 3px 3px;
+}
+
+.app-shell > * {
+  position: relative;
+  z-index: 1;
+}
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.backdrop-star {
+  position: absolute;
+  background: var(--gold-300);
+  border-radius: 50%;
+  animation: twinkle 4s ease-in-out infinite;
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.15; transform: scale(0.8); }
+  50% { opacity: 0.9; transform: scale(1.2); }
+}
+.backdrop-moon {
+  position: absolute;
+  top: 4%;
+  right: 6%;
+  width: 120px;
+  height: 120px;
+  color: var(--gold-300);
+  opacity: 0.18;
+  filter: drop-shadow(0 0 40px rgba(253, 230, 138, 0.4));
+  animation: moonPulse 7s ease-in-out infinite;
+}
+
+@keyframes moonPulse {
+  0%, 100% { transform: scale(1); opacity: 0.18; }
+  50% { transform: scale(1.06); opacity: 0.24; }
+}
+
+.backdrop-moon svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.backdrop-hills {
+  position: absolute;
+  bottom: 0;
+  left: -2%;
+  width: 104%;
+  height: 34%;
+}
+
+.backdrop-skyline {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 46vh;
+  pointer-events: none;
+}
+
+.backdrop-houselight {
+  position: absolute;
+  bottom: -4vh;
+  left: 50%;
+  width: 56vw;
+  height: 46vh;
+  transform: translateX(-50%);
+  background: radial-gradient(ellipse at 50% 82%, rgba(245, 158, 11, 0.2), rgba(124, 58, 237, 0.14) 44%, transparent 74%);
+}
+
+.sky-piece {
+  position: absolute;
+  bottom: 0;
+  display: block;
+  width: auto;
+  height: auto;
+}
+
+.sky-graveyard {
+  left: 0;
+  bottom: 0;
+  width: clamp(230px, 30vw, 420px);
+  color: #05010c;
+  opacity: 0.9;
+  filter: drop-shadow(0 -6px 30px rgba(139, 92, 246, 0.5));
+  -webkit-mask-image: linear-gradient(to bottom, #000 82%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 82%, transparent 100%);
+}
+
+.sky-manor {
+  right: -3%;
+  bottom: -1vh;
+  width: auto;
+  height: min(41vh, 32vw);
+  opacity: 1;
+}
+
+@media (max-width: 820px) {
+  .sky-manor {
+    right: -6%;
+    bottom: -2vh;
+    width: clamp(150px, 46vw, 260px);
+    opacity: 0.75;
+  }
+
+  .sky-graveyard {
+    width: clamp(180px, 46vw, 230px);
+    opacity: 0.7;
+  }
+}
+
+.backdrop-fog {
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 46vh;
+  overflow: hidden;
+  opacity: 0.72;
+}
+.backdrop-fog span {
+  position: absolute;
+  bottom: -14%;
+  width: 52vw;
+  height: 36vh;
+  border-radius: 50%;
+}
+.fog-a { left: -12%; background: radial-gradient(closest-side, rgba(139, 92, 246, 0.32), transparent 100%); }
+.fog-b { left: 28%; bottom: -22%; background: radial-gradient(closest-side, rgba(196, 181, 253, 0.17), transparent 100%); }
+.fog-c { right: -14%; background: radial-gradient(closest-side, rgba(245, 158, 11, 0.16), transparent 100%); }
+
+@keyframes batFlight {
+  0% { transform: translate3d(-12vw, 0, 0) rotate(-8deg); }
+  50% { transform: translate3d(50vw, -6vh, 0) rotate(6deg); }
+  100% { transform: translate3d(112vw, 2vh, 0) rotate(-4deg); }
+}
+
+@keyframes batFlap {
+  0%, 100% { transform: scaleY(1); }
+  50% { transform: scaleY(0.72); }
+}
+
+.backdrop-bat {
+  position: absolute;
+  width: clamp(48px, 6vw, 86px);
+  height: auto;
+  color: #1b1030;
+  opacity: 0.7;
+  animation: batFlight linear infinite;
+  will-change: transform;
+}
+
+.backdrop-bat svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  animation: batFlap 0.5s ease-in-out infinite;
+  transform-origin: center;
+}
+
+.bat-a { top: 12%; animation-duration: 26s; animation-delay: -2s; }
+.bat-b { top: 22%; animation-duration: 34s; animation-delay: -14s; }
+.bat-c { top: 7%; animation-duration: 44s; animation-delay: -26s; color: #241437; opacity: 0.55; }
+
+@media (prefers-reduced-motion: reduce) {
+  .backdrop-bat {
+    animation: none;
+    left: 8%;
+  }
+
+  .bat-b { left: 42%; }
+  .bat-c { left: 76%; }
+}
+
+
+.backdrop-pumpkins {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.backdrop-sparkle {
+  position: absolute;
+  color: var(--gold-300);
+  opacity: 0.3;
+}
+
+.sparkle-a { top: 30%; left: 30%; width: 22px; height: 22px; animation: twinkle 3s ease-in-out infinite; }
+.sparkle-b { top: 60%; right: 22%; width: 16px; height: 16px; animation: twinkle 3.6s ease-in-out infinite 1s; }
+
+@keyframes pulseGlow {
+  0%, 100% { opacity: 0.05; }
+  50% { opacity: 0.11; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .backdrop-star,
+  .backdrop-pumpkin,
+  .backdrop-sparkle {
+    animation: none !important;
+  }
+  .backdrop-fog {
+    display: none;
+  }
+}
+
+.page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-4) var(--space-8);
+}
+
+.page-wide {
+  max-width: 1080px;
+}
+
+.brand-bar {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: var(--space-5) var(--space-4) 0;
+}
+
+.brand-bar .brand {
+  margin-bottom: 0;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-display);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-size: 12px;
+  color: var(--gold-300);
+  margin-bottom: var(--space-6);
+  padding: 6px 14px 6px 10px;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  border-radius: var(--radius-pill);
+  background: rgba(245, 158, 11, 0.07);
+}
+
+.brand-mark {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  color: var(--gold-500);
+}
+
+.brand-mark svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.page-top .brand {
+  margin-bottom: 0;
+}
+
+.section {
+  margin-top: var(--space-8);
+}
+
+.section-heading {
+  font-size: 28px;
+  margin-bottom: var(--space-1);
+  letter-spacing: -0.01em;
+}
+
+.section-sub {
+  color: var(--text-muted);
+  margin-bottom: var(--space-4);
+  font-size: 14px;
+}

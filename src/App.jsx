@@ -64,6 +64,12 @@ export default function App() {
   }, [view]);
 
   useEffect(() => {
+    if (view === 'shared') {
+      document.querySelector('meta[name="robots"]')?.setAttribute('content', 'noindex, nofollow');
+    }
+  }, [view]);
+
+  useEffect(() => {
     return () => {
       if (announcementTimer.current) {
         clearTimeout(announcementTimer.current);

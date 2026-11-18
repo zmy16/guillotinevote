@@ -485,18 +485,19 @@
   gap: var(--space-2);
 }
 
-.history-resume {
+.button.history-resume {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  min-height: 44px;
+  min-height: 40px;
+  padding: 8px 18px;
 }
 
 .history-delete {
   display: grid;
   place-items: center;
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   border-radius: var(--radius-md);
   border: 1px solid var(--border-ghost);
   background: transparent;
@@ -518,6 +519,15 @@
     justify-content: flex-end;
     padding-top: var(--space-3);
     border-top: 1px solid var(--border-ghost);
+  }
+
+  .button.history-resume {
+    min-height: 44px;
+  }
+
+  .history-delete {
+    width: 44px;
+    height: 44px;
   }
 }
 .history-empty {

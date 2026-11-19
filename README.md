@@ -15,6 +15,7 @@ Take turns executing the option you like least, until one survivor holds the dec
 ![Tests](https://img.shields.io/badge/tests-Vitest%20%2B%20fast--check-6e9f18?logo=vitest&logoColor=white)
 ![No backend](https://img.shields.io/badge/backend-none-8b5cf6)
 ![Category](https://img.shields.io/badge/Kiroween%202026-Costume%20Contest-f59e0b)
+![License](https://img.shields.io/badge/license-MIT-blue)
 
 <img src="public/og-image.jpg" alt="GuillotineVote: vote for what you hate, not what you love" width="720">
 
@@ -65,6 +66,21 @@ It runs on a single shared device, in the browser. No account, no server, no dat
   <br>
   <sub>Built for the phone first: one column, thumb-sized buttons, and a guillotine that stays in view.</sub>
 </p>
+
+Every page has its own night scene: a haunted manor on the landing page, a blood-moon courtyard for the trial, a crypt for Match history, a pine forest for the FAQ, a torch-lit dungeon for the docket, and a golden dawn for the winner.
+
+<table>
+  <tr>
+    <td width="33%"><img src="docs/screenshots/history.jpg" alt="Match history in a crypt with floating ghosts"></td>
+    <td width="33%"><img src="docs/screenshots/faq.jpg" alt="The FAQ in a pine forest with glowing eyes"></td>
+    <td width="33%"><img src="docs/screenshots/setup.jpg" alt="The docket form in a torch-lit dungeon"></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Match history: the crypt</sub></td>
+    <td align="center"><sub>FAQ: the forest</sub></td>
+    <td align="center"><sub>Docket: the dungeon</sub></td>
+  </tr>
+</table>
 
 ## Features
 
@@ -171,3 +187,9 @@ docs/screenshots/    Images used in this README
 - [React](https://react.dev/), [Vite](https://vite.dev/), [GSAP](https://gsap.com/), [Lucide](https://lucide.dev/)
 - Icons from [game-icons.net](https://game-icons.net/) (CC BY 3.0, by Lorc, Delapouite and other contributors) and [Material Design Icons](https://pictogrammers.com/library/mdi/) (Apache 2.0), through [Iconify](https://iconify.design/)
 - Fonts: [Cinzel](https://fonts.google.com/specimen/Cinzel) and [Spectral](https://fonts.google.com/specimen/Spectral), both under the SIL Open Font License
+
+## License
+
+Released under the [MIT License](LICENSE). Copyright (c) 2026 Raid.
+
+The third-party icons and fonts listed under Credits keep their own licenses.

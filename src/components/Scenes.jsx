@@ -391,26 +391,31 @@ function CrowdFigure({ x, scale, hasTorch, hasFork, index }) {
   );
 }
 
-const CLOUD_BLOBS = [
-  { x: 200, y: 70, w: 280, h: 46 },
-  { x: 640, y: 40, w: 340, h: 52 },
-  { x: 1120, y: 90, w: 300, h: 44 },
-  { x: 900, y: 150, w: 240, h: 34 }
+const CLOUDS = [
+  { left: -6, top: 2, width: 40, height: 15, delay: 0 },
+  { left: 28, top: 9, width: 34, height: 12, delay: -23 },
+  { left: 56, top: 1, width: 42, height: 16, delay: -41 },
+  { left: 78, top: 14, width: 30, height: 11, delay: -12 },
+  { left: 8, top: 20, width: 28, height: 9, delay: -55 }
 ];
-
 function CourtyardScene() {
   return (
     <>
-      <svg className="parallax-near sky-clouds" viewBox="0 0 1440 220" preserveAspectRatio="xMidYMin slice">
-        {CLOUD_BLOBS.map((cloud, index) => (
-          <g key={`cloud-${cloud.x}`} className="cloud" style={{ animationDelay: `${-index * 11}s` }}>
-            <ellipse cx={cloud.x} cy={cloud.y} rx={cloud.w / 2} ry={cloud.h / 2} fill="#0a0516" opacity="0.75" />
-            <ellipse cx={cloud.x - cloud.w * 0.2} cy={cloud.y - cloud.h * 0.3} rx={cloud.w / 3} ry={cloud.h / 2} fill="#0a0516" opacity="0.75" />
-            <ellipse cx={cloud.x + cloud.w * 0.22} cy={cloud.y - cloud.h * 0.2} rx={cloud.w / 3.4} ry={cloud.h / 2.2} fill="#0a0516" opacity="0.75" />
-          </g>
+      <div className="parallax-near sky-clouds">
+        {CLOUDS.map((cloud) => (
+          <span
+            key={`cloud-${cloud.left}`}
+            className="cloud"
+            style={{
+              left: `${cloud.left}vw`,
+              top: `${cloud.top}vh`,
+              '--cloud-width': cloud.width,
+              '--cloud-height': cloud.height,
+              animationDelay: `${cloud.delay}s`
+            }}
+          />
         ))}
-      </svg>
-      <Ground />
+      </div>      <Ground />
       <FarTrees />
       <Hills />
       <div className="backdrop-skyline">

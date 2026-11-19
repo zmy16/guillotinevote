@@ -132,11 +132,11 @@ The tests cover the engine rules, property-based checks of game invariants, the 
 
 Kiro drove the implementation. The `/.kiro` folder in this repository holds the artifacts, and `.kiro/README.md` explains what each one was used for:
 
-- **Steering** (`.kiro/steering/`): three files that carry the product vocabulary, the stack and architecture boundaries, and the horror UX contract. They were loaded on every request, so the engine stayed pure and the color meanings held across pages.
+- **Steering** (`.kiro/steering/`): three files that carry the product vocabulary, the stack and architecture boundaries, and the horror UX contract. They were written late in the build to record the rules the code already followed, and they keep future work consistent with them.
 - **Specs** (`.kiro/specs/guillotine-engine/`): `requirements.md` states the rules in EARS form, `design.md` fixes the state schema and function contracts, `tasks.md` lists the work with the test that proves each item.
 - **Planning documents**: `PRD.md`, `DESIGN.md`, `TECH_STACK.md`, `IMPLEMENTATION_PLAN.md`, and `STAGE_LAYOUT_PLAN.md` sit at the repository root and drove the build alongside the Kiro artifacts.
 
-The section lists only tools and workflows that were actually used. No hooks or agents are claimed.
+The section lists only tools and workflows that were actually used. The engine spec and steering files were derived from the planning documents and checked against the code and tests; they record the contract rather than claim to have driven the first version. No agent hooks or MCP servers are part of the build.
 
 ## Getting started
 

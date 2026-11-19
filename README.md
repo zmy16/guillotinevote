@@ -71,6 +71,7 @@ It runs on a single shared device, in the browser. No account, no server, no dat
 **Game**
 - Animated guillotine built with GSAP, with a rope pull, a blade drop, impact shake, sparks, and dust.
 - Blade sounds synthesized with the Web Audio API. Sound is off by default.
+- A different night scene for each page, with its own parallax depth: a haunted manor, a crypt with ghosts, a pine forest with watching eyes, a torch-lit dungeon, a blood-moon courtyard with a crowd, and a golden dawn for the winner.
 - A Graveyard of headstones that records every execution and pardon.
 - Match history on your device. Leave a trial midway and resume it later.
 - Share link for a finished game. The whole result is packed into the URL, so nothing is uploaded.

@@ -289,7 +289,8 @@ export default function App() {
     );
   }
 
-  const backdrop = <HalloweenBackdrop variant={view} />;
+  const backdropVariant = pageKey === 'finished' ? 'finished' : view;
+  const backdrop = <HalloweenBackdrop key={backdropVariant} variant={backdropVariant} />;
   const isTrialInProgress = view === 'stage' && Boolean(gameState) && !gameState.finished;
   const leaveDialogBody = hasTrialProgress && !isSample ? LEAVE_BODY_SAVED : LEAVE_BODY_NOTHING_SAVED;
   const brandBar = (

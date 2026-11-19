@@ -1,72 +1,30 @@
 import { useLayoutEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { BatArt, Sparkle, MoonWaning, CemeteryArt, ManorArt, JackOLanternArt, SpiderArt } from './Icons.jsx';
+import { BatArt, Sparkle, MoonWaning, SpiderArt } from './Icons.jsx';
+import { SCENES } from './Scenes.jsx';
 import { reducedMotion } from '../usePageEnter.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
 const BAT_CLASSES = ['bat-a', 'bat-b', 'bat-c', 'bat-d', 'bat-e', 'bat-f'];
-const PUMPKIN_CLASSES = ['pumpkin-a', 'pumpkin-b', 'pumpkin-c'];
 const EMBER_COUNT = 12;
+const INDOOR_VARIANT = 'setup';
 const PARALLAX_LAYERS = [
   ['.backdrop-stars', 20],
   ['.backdrop-moon', 50],
   ['.backdrop-sparkles', 40],
   ['.backdrop-far', 30],
   ['.backdrop-hills', 55],
+  ['.parallax-near', 40],
   ['.backdrop-skyline', 100],
   ['.backdrop-foreground', 170]
 ];
-const FAR_TREE_PATH = Array.from({ length: 36 }, (_, index) => {
-  const x = index * 41 + (index % 3) * 6;
-  const height = 70 + ((index * 37) % 5) * 18;
-  return `M${x} 200L${x + 14} ${200 - height}L${x + 28} 200z`;
-}).join('');
-
-function Fog() {
-  return (
-    <div className="backdrop-fog" aria-hidden="true">
-      <span className="fog-a" />
-      <span className="fog-b" />
-      <span className="fog-c" />
-    </div>
-  );
-}
-
-function FarTrees() {
-  return (
-    <svg className="backdrop-far" viewBox="0 0 1440 200" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
-      <path fill="#1a0f33" d={FAR_TREE_PATH} />
-    </svg>
-  );
-}
-
-function Skyline() {
-  return (
-    <div className="backdrop-skyline" aria-hidden="true">
-      <div className="backdrop-houselight" />
-      <CemeteryArt className="sky-piece sky-graveyard" />
-      <ManorArt className="sky-piece sky-manor" />
-    </div>
-  );
-}
-
-function Foreground() {
-  return (
-    <div className="backdrop-foreground" aria-hidden="true">
-      {PUMPKIN_CLASSES.map((pumpkinClass) => (
-        <span key={pumpkinClass} className={`sky-pumpkin ${pumpkinClass}`}>
-          <span className="pumpkin-halo" />
-          <JackOLanternArt className="pumpkin-art" />
-        </span>
-      ))}
-    </div>
-  );
-}
 
 export function HalloweenBackdrop({ variant = 'landing' }) {
   const rootRef = useRef(null);
+  const Scene = SCENES[variant] || SCENES.landing;
+  const isOutdoors = variant !== INDOOR_VARIANT;
 
   useLayoutEffect(() => {
     if (reducedMotion() || !rootRef.current) {
@@ -125,31 +83,36 @@ export function HalloweenBackdrop({ variant = 'landing' }) {
   }, [variant]);
 
   return (
-    <div ref={rootRef} className="backdrop" aria-hidden="true">
-      <div className="backdrop-stars">
-        {Array.from({ length: 18 }).map((_, index) => {
-          const left = (index * 37 + variant.length * 11) % 100;
-          const top = (index * 53 + 17) % 85;
-          const size = 1 + (index % 3);
-          const delay = (index % 7) * 0.4;
-          return (
-            <span
-              key={`star-${index}`}
-              className="backdrop-star"
-              style={{ left: `${left}%`, top: `${top}%`, width: size, height: size, animationDelay: `${delay}s` }}
-            />
-          );
-        })}
-      </div>
-      <div className="backdrop-moon">
-        <MoonWaning width="100%" height="100%" />
-      </div>
-      <div className="backdrop-bats">
-        {BAT_CLASSES.map((batClass) => (
-          <BatArt key={batClass} className={`backdrop-bat ${batClass}`} />
-        ))}
-      </div>
-      <SpiderArt className="backdrop-spider" />
+    <div ref={rootRef} className="backdrop" data-variant={variant} aria-hidden="true">
+      <div className="backdrop-tint" />
+      {isOutdoors && (
+        <>
+          <div className="backdrop-stars">
+            {Array.from({ length: 18 }).map((_, index) => {
+              const left = (index * 37 + variant.length * 11) % 100;
+              const top = (index * 53 + 17) % 85;
+              const size = 1 + (index % 3);
+              const delay = (index % 7) * 0.4;
+              return (
+                <span
+                  key={`star-${index}`}
+                  className="backdrop-star"
+                  style={{ left: `${left}%`, top: `${top}%`, width: size, height: size, animationDelay: `${delay}s` }}
+                />
+              );
+            })}
+          </div>
+          <div className="backdrop-moon">
+            <MoonWaning width="100%" height="100%" />
+          </div>
+          <div className="backdrop-bats">
+            {BAT_CLASSES.map((batClass) => (
+              <BatArt key={batClass} className={`backdrop-bat ${batClass}`} />
+            ))}
+          </div>
+          <SpiderArt className="backdrop-spider" />
+        </>
+      )}
       <div className="backdrop-embers">
         {Array.from({ length: EMBER_COUNT }).map((_, index) => (
           <span
@@ -164,15 +127,7 @@ export function HalloweenBackdrop({ variant = 'landing' }) {
           />
         ))}
       </div>
-      <div className="backdrop-ground" />
-      <FarTrees />
-      <svg className="backdrop-hills" viewBox="0 0 1440 320" preserveAspectRatio="none">
-        <path fill="#0d0817" d="M0 196c120-58 232-70 344-36s214 96 330 82 214-96 330-104 214 40 436 88v94H0z" />
-        <path fill="#08040f" d="M0 244c140-46 258-42 372-10s226 74 348 58 236-84 358-70 210 56 362 96v2H0z" opacity="0.92" />
-      </svg>
-      <Skyline />
-      <Fog />
-      <Foreground />
+      <Scene />
       {variant === 'landing' && (
         <div className="backdrop-sparkles">
           <Sparkle className="backdrop-sparkle sparkle-a" />

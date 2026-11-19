@@ -6,6 +6,7 @@ import '@fontsource/cinzel/600.css';
 import '@fontsource/cinzel/700.css';
 import './index.css';
 import './styles/base.css';
+import './styles/scenes.css';
 import './styles/landing.css';
 import './styles/forms.css';
 import './styles/stage.css';

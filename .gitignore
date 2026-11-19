@@ -7,3 +7,5 @@ coverage
 screens
 /*.md
 !/README.md
+
+.vercel

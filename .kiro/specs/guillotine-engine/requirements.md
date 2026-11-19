@@ -1,6 +1,6 @@
 # Requirements: guillotine engine
 
-Scope: the pure rules in `src/engine.js`. Derived from `PRD.md` section 8. Each requirement lists the test that checks it.
+Scope: the pure rules in `src/engine.js`. Derived from the functional requirements of the product requirements document. Each requirement lists the test that checks it.
 
 ## 1. Setup
 

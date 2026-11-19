@@ -6,6 +6,12 @@
 
 **Vote for what you hate, not what you love.**
 
+**Category:** Costume Contest, Kiroween 2026
+
+**Live demo:** https://guillotinevote.vercel.app/
+
+**Demo video:** _link to be added when the video is published_
+
 A horror-themed reverse-voting party game for groups that cannot agree.<br>
 Take turns executing the option you like least, until one survivor holds the decree.
 
@@ -122,6 +128,16 @@ flowchart LR
 
 The tests cover the engine rules, property-based checks of game invariants, the share-link round trip (including malformed and hostile links), and match history validation.
 
+### Built with Kiro
+
+Kiro drove the implementation. The `/.kiro` folder in this repository holds the artifacts, and `.kiro/README.md` explains what each one was used for:
+
+- **Steering** (`.kiro/steering/`): three files that carry the product vocabulary, the stack and architecture boundaries, and the horror UX contract. They were loaded on every request, so the engine stayed pure and the color meanings held across pages.
+- **Specs** (`.kiro/specs/guillotine-engine/`): `requirements.md` states the rules in EARS form, `design.md` fixes the state schema and function contracts, `tasks.md` lists the work with the test that proves each item.
+- **Planning documents**: `PRD.md`, `DESIGN.md`, `TECH_STACK.md`, `IMPLEMENTATION_PLAN.md`, and `STAGE_LAYOUT_PLAN.md` sit at the repository root and drove the build alongside the Kiro artifacts.
+
+The section lists only tools and workflows that were actually used. No hooks or agents are claimed.
+
 ## Getting started
 
 Requires Node.js 18 or newer.
@@ -149,7 +165,7 @@ npm run dev -- --port 4173
 
 ## Deploying
 
-The app is a static site. Any static host works (Vercel, Netlify, Cloudflare Pages, AWS Amplify). Use `npm run build` as the build command and `dist` as the output folder.
+The app is a static site. The live deployment runs on Vercel at https://guillotinevote.vercel.app/. Any static host works (Vercel, Netlify, Cloudflare Pages, AWS Amplify). Use `npm run build` as the build command and `dist` as the output folder.
 
 Set `SITE_URL` to your public address before building. It fills the canonical URL, Open Graph image, structured data, and the sitemap.
 
